@@ -1,0 +1,5 @@
+http://www.tjansson.dk/2012/11/yabi-yet-another-boids-implementation-simulation-of-flocking-animals/
+
+http://www.vergenet.net/~conrad/boids/pseudocode.html
+
+http://www.coderholic.com/boids/

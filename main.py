@@ -3,6 +3,9 @@ import random
 import math
 import sys
 
+# Initialize Pygame
+pygame.init()
+
 # Define some colors
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
@@ -10,21 +13,28 @@ GREEN = (0, 255, 0)
 RED = (255, 0, 0)
 BLUE = (0, 0, 255)
 
-screen_width = 700
-screen_height = 400
+screen_width = 800
+screen_height = 600
 
 # Config stuff
 maxvel = 10
+numprey = 50
 
 #lists
-closeprey = []
+# This is a list of 'sprites.' Each block in the program is
+# added to this list. The list is managed by a class called 'Group.'
+prey_list = pygame.sprite.Group()
+
+# This is a list of every sprite. All blocks and the player block as well.
+all_sprites_list = pygame.sprite.Group()
+
 
 class Prey(pygame.sprite.Sprite):
     """
     This class represents the ball
     It derives from the "Sprite" class in Pygame
     """
-    def __init__(self):
+    def __init__(self, x, y):
         # Call the parent class (Sprite) constructor
         super(Prey, self).__init__()
 
@@ -32,35 +42,38 @@ class Prey(pygame.sprite.Sprite):
         prey_image = pygame.image.load("ressources/img/prey.png").convert()
         self.image = prey_image
         # Fetch the rectangle object that has the dimensions of the image
-        # Update the position of this object by setting the values 
+        # Update the position of this object by setting the values
         # of rect.x and rect.y
         self.rect = self.image.get_rect()
 
+        # Coordinates
+        self.rect.x = x
+        self.rect.y = y
         # Velocity
         self.x_vel = random.randint(1, 10)/10.0
         self.y_vel = random.randint(1, 10)/10.0
 
-    def getdistance(self, flockmate):
-        distX = self.rect.x - flockmate.rect.x
-        distY = self.rect.y - flockmate.rect.y
+    def getdistance(self, prey):
+        distX = self.rect.x - prey.rect.x
+        distY = self.rect.y - prey.rect.y
         return math.sqrt(distX * distX + distY * distY)
 
-    def cohesion(self, flockmates):
-        if len(flockmates) <= 1:
+    def cohesion(self, prey_list):
+        if len(prey_list) < 1:
             return
 
         # calculate the average distances from the other boids
         avgX = 0
         avgY = 0
-        for flockmate in flockmates:
-            if flockmate.rect.x == self.rect.x and flockmate.rect.y == self.rect.y:
+        for prey in prey_list:
+            if prey.rect.x == self.rect.x and prey.rect.y == self.rect.y:
                 continue
 
-            avgX += (self.rect.x - flockmate.rect.x)
-            avgY += (self.rect.y - flockmate.rect.y)
+            avgX += (self.rect.x - prey.rect.x)
+            avgY += (self.rect.y - prey.rect.y)
 
-        avgX /= len(flockmates)
-        avgY /= len(flockmates)
+        avgX /= len(prey_list)
+        avgY /= len(prey_list)
 
         # set our velocity towards the others
         distance = math.sqrt((avgX * avgX) + (avgY * avgY)) * -1.0
@@ -68,37 +81,38 @@ class Prey(pygame.sprite.Sprite):
         self.x_vel -= (avgX / 100)
         self.y_vel -= (avgY / 100)
 
-    def alignment(self, flockmates):
-        if len(flockmates) <= 1:
+    def alignment(self, prey_list):
+        if len(prey_list) < 1:
             return
         # calculate the average velocities of the other boids
         avgX = 0
         avgY = 0
 
-        for flockmate in flockmates:
-            avgX += flockmate.x_vel
-            avgY += flockmate.y_vel
+        for prey in prey_list:
+            avgX += prey.x_vel
+            avgY += prey.y_vel
 
-        avgX /= len(flockmates)
-        avgY /= len(flockmates)
+        avgX /= len(prey_list)
+        avgY /= len(prey_list)
 
         # set our velocity towards the others
         self.x_vel += (avgX / 40)
         self.y_vel += (avgY / 40)
 
-    def seperation(self, flockmates, minDistance):
-        if len(flockmates) <= 1: return
+    def seperation(self, prey_list, minDistance):
+        if len(prey_list) < 1:
+            return
 
         distanceX = 0
         distanceY = 0
         numClose = 0
 
-        for flockmate in flockmates:
-            distance = self.getdistance(flockmate)
+        for prey in prey_list:
+            distance = self.getdistance(prey)
             if distance < minDistance:
                 numClose += 1
-                xdiff = (self.rect.x - flockmate.rect.x)
-                ydiff = (self.rect.y - flockmate.rect.y)
+                xdiff = (self.rect.x - prey.rect.x)
+                ydiff = (self.rect.y - prey.rect.y)
 
                 if xdiff >= 0:
                     xdiff = math.sqrt(minDistance) - xdiff
@@ -123,8 +137,7 @@ class Prey(pygame.sprite.Sprite):
 
     def update(self):
         """ Called each frame. """
-
-        if abs(self.x_vel) >= maxvel or abs(self.y_vel) >= maxvel:
+        if abs(self.x_vel) > maxvel or abs(self.y_vel) > maxvel:
             scaleFactor = maxvel / max(abs(self.x_vel), abs(self.y_vel))
             self.x_vel *= scaleFactor
             self.y_vel *= scaleFactor
@@ -132,48 +145,28 @@ class Prey(pygame.sprite.Sprite):
         self.rect.x += self.x_vel
         self.rect.y += self.y_vel
 
-# Initialize Pygame
-pygame.init()
- 
 # Set the height and width of the screen
 screen = pygame.display.set_mode([screen_width, screen_height])
- 
-# This is a list of 'sprites.' Each block in the program is
-# added to this list. The list is managed by a class called 'Group.'
-prey_list = pygame.sprite.Group()
 
-# This is a list of every sprite. All blocks and the player block as well.
-all_sprites_list = pygame.sprite.Group()
+for i in range(numprey):
 
-for i in range(10):
-    prey = Prey()
-    # Set a random location for the prey
-    prey.rect.y = random.randrange(10, screen_height - 10)
-    prey.rect.x = random.randrange(10, screen_width - 10)
-    
-    # Add the prey to the list of objects
+    prey = Prey(random.randint(25, screen_width - 25), random.randint(25, screen_height - 25))
+
+    # Set a random location for the prey and add the prey to the list of objects
     prey_list.add(prey)
     all_sprites_list.add(prey)
- 
-# Loop until the user clicks the close button.
-done = False
- 
-# Used to manage how fast the screen updates
-clock = pygame.time.Clock()
- 
-score = 0
- 
+
 # -------- Main Program Loop -----------
-while not done:
+while 1:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            done = True
+            sys.exit()
 
     for prey in prey_list:
+        closeprey = []
         for otherprey in prey_list:
             if otherprey == prey:
                 continue
-
             distance = prey.getdistance(otherprey)
             if distance < 200:
                 closeprey.append(otherprey)
@@ -199,16 +192,15 @@ while not done:
         all_sprites_list.update()
 
     # Clear the screen
-    screen.fill(BLUE)
+    screen.fill(BLACK)
 
     # Draw all the spites
     all_sprites_list.draw(screen)
- 
-    # Limit to 60 frames per second
-    clock.tick(60)
- 
+
     # Go ahead and update the screen with what we've drawn.
     pygame.display.flip()
- 
-pygame.quit()
-sys.exit()
+    pygame.time.delay(10)
+    # Limit to 60 frames per second
+    # Used to manage how fast the screen updates
+    clock = pygame.time.Clock()
+    clock.tick(60)
