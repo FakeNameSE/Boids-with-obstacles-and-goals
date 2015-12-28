@@ -19,6 +19,7 @@ screen_height = 600
 # Config stuff
 maxvel = 10
 numprey = 50
+border = 25
 
 #lists
 # This is a list of 'sprites.' Each block in the program is
@@ -27,6 +28,7 @@ prey_list = pygame.sprite.Group()
 
 # This is a list of every sprite. All blocks and the player block as well.
 all_sprites_list = pygame.sprite.Group()
+
 
 
 class Prey(pygame.sprite.Sprite):
@@ -41,14 +43,14 @@ class Prey(pygame.sprite.Sprite):
         # Load image as sprite
         prey_image = pygame.image.load("ressources/img/prey.png").convert()
         self.image = prey_image
+
         # Fetch the rectangle object that has the dimensions of the image
-        # Update the position of this object by setting the values
-        # of rect.x and rect.y
         self.rect = self.image.get_rect()
 
         # Coordinates
         self.rect.x = x
         self.rect.y = y
+
         # Velocity
         self.x_vel = random.randint(1, 10)/10.0
         self.y_vel = random.randint(1, 10)/10.0
@@ -149,10 +151,9 @@ class Prey(pygame.sprite.Sprite):
 screen = pygame.display.set_mode([screen_width, screen_height])
 
 for i in range(numprey):
-
-    prey = Prey(random.randint(25, screen_width - 25), random.randint(25, screen_height - 25))
-
-    # Set a random location for the prey and add the prey to the list of objects
+    # Create new prey in random location
+    prey = Prey(random.randint(0, screen_width), random.randint(0, screen_height))
+    # Add the prey to the list of objects
     prey_list.add(prey)
     all_sprites_list.add(prey)
 
@@ -175,7 +176,6 @@ while 1:
         prey.alignment(closeprey)
         prey.seperation(closeprey, 20)
 
-        border = 25
         if prey.rect.x < border and prey.x_vel < 0:
             prey.x_vel = -prey.x_vel * random.random()
 
@@ -188,8 +188,8 @@ while 1:
         if prey.rect.y > screen_height - border and prey.y_vel > 0:
             prey.y_vel = -prey.y_vel * random.random()
 
-        # Calls update() method on every sprite in the list
-        all_sprites_list.update()
+    # Calls update() method on every sprite in the list
+    all_sprites_list.update()
 
     # Clear the screen
     screen.fill(BLACK)
