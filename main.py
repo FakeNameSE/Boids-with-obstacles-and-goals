@@ -1,7 +1,8 @@
+#!/usr/bin/env python
+import sys
 import pygame
 import random
 import math
-import sys
 
 # Initialize Pygame
 pygame.init()
@@ -18,10 +19,10 @@ screen_height = 600
 
 # Config stuff
 maxvel = 10
-numprey = 50
+numprey = 10
 border = 25
 
-#lists
+# lists
 # This is a list of 'sprites.' Each block in the program is
 # added to this list. The list is managed by a class called 'Group.'
 prey_list = pygame.sprite.Group()
@@ -33,7 +34,7 @@ all_sprites_list = pygame.sprite.Group()
 
 class Prey(pygame.sprite.Sprite):
     """
-    This class represents the ball
+    This class represents the prey
     It derives from the "Sprite" class in Pygame
     """
     def __init__(self, x, y):
@@ -134,7 +135,7 @@ class Prey(pygame.sprite.Sprite):
         if numClose == 0:
             return
 
-        self.x_vel -= distanceX / 5
+        self.x_vel -= distanceX / 5 # remember to play around with this number later
         self.y_vel -= distanceY / 5
 
     def update(self):
