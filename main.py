@@ -24,7 +24,7 @@ class Prey(pygame.sprite.Sprite):
         super(Prey, self).__init__()
 
         # Load image as sprite
-        prey_image = pygame.image.load("ball.png").convert()
+        prey_image = pygame.image.load("ressources/img/prey.png").convert()
         self.image = prey_image
 
         # Fetch the rectangle object that has the dimensions of the image
