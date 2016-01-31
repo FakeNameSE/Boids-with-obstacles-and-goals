@@ -34,8 +34,8 @@ class Prey(pygame.sprite.Sprite):
         self.rect.x = x
         self.rect.y = y
 
-        self.velocityX = random.randint(1, 10) / -10.0
-        self.velocityY = random.randint(1, 10) / -10.0
+        self.velocityX = random.randint(-10, 10) / 10.0
+        self.velocityY = random.randint(-10, 10) / 10.0
 
     "Return the distance from another prey"
     def distance(self, prey):
