@@ -50,7 +50,7 @@ class Prey(pygame.sprite.Sprite):
 
         return math.sqrt(distX * distX + distY * distY)
 
-    def cohesion(self, prey_list):
+    def move_closer(self, prey_list):
         '''Move closer to a set of prey_list'''
 
         if len(prey_list) < 1:
@@ -76,7 +76,7 @@ class Prey(pygame.sprite.Sprite):
         self.velocityY -= (avgY / 100)
 
 
-    def alignment(self, prey_list):
+    def move_with(self, prey_list):
         '''Move with a set of prey_list'''
 
         if len(prey_list) < 1:
@@ -97,7 +97,7 @@ class Prey(pygame.sprite.Sprite):
         self.velocityX += (avgX / 40)
         self.velocityY += (avgY / 40)
 
-    def seperation(self, prey_list, minDistance):
+    def move_away(self, prey_list, minDistance):
         '''Move away from a set of prey_list. This avoids crowding'''
 
         if len(prey_list) < 1:
@@ -198,9 +198,9 @@ while running:
             if distance < 200:
                 closeBoids.append(otherBoid)
 
-        prey.cohesion(closeBoids)
-        prey.alignment(closeBoids)
-        prey.seperation(closeBoids, 20)
+        prey.move_closer(closeBoids)
+        prey.move_with(closeBoids)
+        prey.move_away(closeBoids, 20)
 
         # ensure they stay within the screen space
         # if we roubound we can lose some of our velocity
@@ -213,7 +213,10 @@ while running:
         if prey.rect.y > SCREEN_HEIGHT - BORDER and prey.velocityY > 0:
             prey.velocityY = -prey.velocityY * random.random()
 
-    prey.update()
+        prey.update()
+
+    # Calls update() method on every sprite in the list
+    #all_sprites_list.update()
 
     # --- draws ---
 
