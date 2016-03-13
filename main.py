@@ -14,11 +14,10 @@ SCREEN_SIZE = SCREEN_WIDTH, SCREEN_HEIGHT = 1200, 900
 BLACK = (0, 0, 0)
 RED   = (255, 0, 0)
 
-MAX_PREY_VELOCITY = 8
-MAX_PREDATOR_VELOCITY = 12
+MAX_BOID_VELOCITY = 8
 NUM_BOIDS = 50
-NUM_OBSTACLES = 15
-BORDER = 25
+NUM_OBSTACLES = 20
+BORDER = 30
 
 # === weights ===
 
@@ -146,8 +145,9 @@ class Boid(pygame.sprite.Sprite):
         self.velocityY += -1 * (obstacle.rect.y - self.rect.y) / OBSTACLE_AVOIDANCE_WEIGHT
 
     def goal(self, mouse_x, mouse_y):
-        self.velocityX += (mouse_x - self.rect.x) / GOAL_WEIGHT
-        self.velocityY += (mouse_y - self.rect.y) / GOAL_WEIGHT
+		'''Seek goal'''
+		self.velocityX += (mouse_x - self.rect.x) / GOAL_WEIGHT
+		self.velocityY += (mouse_y - self.rect.y) / GOAL_WEIGHT
 
     def update(self):
         '''Perform actual movement based on our velocity'''
@@ -163,8 +163,9 @@ class Boid(pygame.sprite.Sprite):
         if self.rect.y > SCREEN_HEIGHT - BORDER and self.velocityY > 0:
             self.velocityY = -self.velocityY * random.random()
 
-        if abs(self.velocityX) > MAX_PREY_VELOCITY or abs(self.velocityY) > MAX_PREY_VELOCITY:
-            scaleFactor = MAX_PREY_VELOCITY / max(abs(self.velocityX), abs(self.velocityY))
+        # Obey speed limit
+        if abs(self.velocityX) > MAX_BOID_VELOCITY or abs(self.velocityY) > MAX_BOID_VELOCITY:
+            scaleFactor = MAX_BOID_VELOCITY / max(abs(self.velocityX), abs(self.velocityY))
             self.velocityX *= scaleFactor
             self.velocityY *= scaleFactor
 
@@ -176,8 +177,7 @@ class Obstacle(pygame.sprite.Sprite):
     def __init__(self, x, y):
         super(Obstacle, self).__init__()
 
-        # Load image as sprite
-        #self.image = pygame.image.load("ressources/img/predator.png").convert()
+        # Draw obstacles (squares)
         self.image = pygame.Surface([30, 30])
         self.image.fill(RED)
 
@@ -189,7 +189,8 @@ class Obstacle(pygame.sprite.Sprite):
         self.rect.y = y
         
     def update(self):
-        pass
+		'''Just in case I want to expand this''' 
+		pass
 
 # === main === (lower_case names)
 
@@ -209,15 +210,19 @@ obstacle_list = pygame.sprite.Group()
 # This is a list of every sprite. All blocks and the player block as well.
 all_sprites_list = pygame.sprite.Group()
 
-# create boids and obstacles at random positions on the screen
+# --- create boids and obstacles at random positions on the screen ---
+
+# Place boids
 for i in range(NUM_BOIDS):
     boid = Boid(random.randint(0, SCREEN_WIDTH), random.randint(0, SCREEN_HEIGHT))
-    # Add the boid to the list of objects
+    # Add the boid to the lists of objects
     boid_list.add(boid)
     all_sprites_list.add(boid)
 
+# Place obstacles
 for i in range(NUM_OBSTACLES):
     obstacle = Obstacle(random.randint(0 + BORDER, SCREEN_WIDTH - BORDER), random.randint(0 + BORDER, SCREEN_HEIGHT - BORDER))
+    # Add the obstacle to the lists of objects
     obstacle_list.add(obstacle)
     all_sprites_list.add(obstacle)
 
@@ -243,6 +248,8 @@ while running:
     mouse_y = pos[1]
 
     # --- updates ---
+    
+    # Scan for boids and obstacles to pay attention to
     for boid in boid_list:
         closeboid = []
         obstacles = []
@@ -258,6 +265,7 @@ while running:
             if distance < 50:
                 avoid = True
                 
+        # Apply the rules of the boids
         boid.cohesion(closeboid)
         boid.alignment(closeboid)
         boid.seperation(closeboid, 20)
@@ -266,6 +274,7 @@ while running:
         boid.goal(mouse_x, mouse_y)
         boid.update()
         
+    # Check for collisions
     for boid in boid_list:
 		collisions = pygame.sprite.spritecollide(boid, obstacle_list, False)
 		for obstacle in collisions:
@@ -273,7 +282,8 @@ while running:
 			boid.velocityY *= -1
 	
     # --- draws ---
-
+	
+	# Background colour
     screen.fill(BLACK)
 
     # Draw all the spites
