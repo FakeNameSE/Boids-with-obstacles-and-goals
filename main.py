@@ -20,6 +20,14 @@ NUM_BOIDS = 50
 NUM_OBSTACLES = 15
 BORDER = 25
 
+# === weights ===
+
+COHESION_WEIGHT = 100
+ALIGNMENT_WEIGHT = 40
+SEPERATION_WEIGHT = 5
+OBSTACLE_AVOIDANCE_WEIGHT = 10
+GOAL_WEIGHT = 100
+
 # === classes ===
 
 class Boid(pygame.sprite.Sprite):
@@ -48,7 +56,7 @@ class Boid(pygame.sprite.Sprite):
 
         return math.sqrt(distX * distX + distY * distY)
 
-    def move_closer(self, boid_list):
+    def cohesion(self, boid_list):
         '''Move closer to a set of boid_list'''
 
         if len(boid_list) < 1:
@@ -70,11 +78,11 @@ class Boid(pygame.sprite.Sprite):
         # set our velocity towards the others
         distance = math.sqrt((avgX * avgX) + (avgY * avgY)) * -1.0
 
-        self.velocityX -= (avgX / 100)
-        self.velocityY -= (avgY / 100)
+        self.velocityX -= (avgX / COHESION_WEIGHT)
+        self.velocityY -= (avgY / COHESION_WEIGHT)
 
 
-    def move_with(self, boid_list):
+    def alignment(self, boid_list):
         '''Move with a set of boid_list'''
 
         if len(boid_list) < 1:
@@ -92,10 +100,10 @@ class Boid(pygame.sprite.Sprite):
         avgY /= len(boid_list)
 
         # set our velocity towards the others
-        self.velocityX += (avgX / 40)
-        self.velocityY += (avgY / 40)
+        self.velocityX += (avgX / ALIGNMENT_WEIGHT)
+        self.velocityY += (avgY / ALIGNMENT_WEIGHT)
 
-    def move_away(self, boid_list, minDistance):
+    def seperation(self, boid_list, minDistance):
         '''Move away from a set of boid_list. This avoids crowding'''
 
         if len(boid_list) < 1:
@@ -129,17 +137,17 @@ class Boid(pygame.sprite.Sprite):
         if numClose == 0:
             return
 
-        self.velocityX -= distanceX / 5
-        self.velocityY -= distanceY / 5
+        self.velocityX -= distanceX / SEPERATION_WEIGHT
+        self.velocityY -= distanceY / SEPERATION_WEIGHT
         
     def obstacle_avoidance(self, obstacle):
         '''Avoid obstacles'''
-        self.velocityX += -1 * (obstacle.rect.x - self.rect.x) / 10
-        self.velocityY += -1 * (obstacle.rect.y - self.rect.y) / 10
+        self.velocityX += -1 * (obstacle.rect.x - self.rect.x) / OBSTACLE_AVOIDANCE_WEIGHT
+        self.velocityY += -1 * (obstacle.rect.y - self.rect.y) / OBSTACLE_AVOIDANCE_WEIGHT
 
     def goal(self, mouse_x, mouse_y):
-        self.velocityX += (mouse_x - self.rect.x) / 100
-        self.velocityY += (mouse_y - self.rect.y) / 100
+        self.velocityX += (mouse_x - self.rect.x) / GOAL_WEIGHT
+        self.velocityY += (mouse_y - self.rect.y) / GOAL_WEIGHT
 
     def update(self):
         '''Perform actual movement based on our velocity'''
@@ -192,8 +200,6 @@ screen = pygame.display.set_mode(SCREEN_SIZE)
 
 # Set the title of the window
 pygame.display.set_caption('Boids')
-
-#screen_rect = screen.get_rect()
 
 # --- objects ---
 
@@ -252,13 +258,19 @@ while running:
             if distance < 50:
                 avoid = True
                 
-        boid.move_closer(closeboid)
-        boid.move_with(closeboid)
-        boid.move_away(closeboid, 20)
+        boid.cohesion(closeboid)
+        boid.alignment(closeboid)
+        boid.seperation(closeboid, 20)
         if avoid == True:
             boid.obstacle_avoidance(obstacle)
         boid.goal(mouse_x, mouse_y)
         boid.update()
+        
+    for boid in boid_list:
+		collisions = pygame.sprite.spritecollide(boid, obstacle_list, False)
+		for obstacle in collisions:
+			boid.velocityX *= -1
+			boid.velocityY *= -1
 	
     # --- draws ---
 
