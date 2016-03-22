@@ -278,8 +278,8 @@ while running:
     for boid in boid_list:
 		collisions = pygame.sprite.spritecollide(boid, obstacle_list, False)
 		for obstacle in collisions:
-			boid.velocityX *= -1
-			boid.velocityY *= -1
+			boid.velocityX = -1 * boid.velocityX * random.uniform(0.1, 0.9)
+			boid.velocityY = -1 * boid.velocityY * random.uniform(0.1, 0.9)
 	
     # --- draws ---
 	
