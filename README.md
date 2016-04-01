@@ -1,4 +1,6 @@
 # pred-prey-boids
-A boids simulation with obstacles and a goal (the mouse).
+This project is a boids implementatation in python (with pygame for graphics) complete with obstacles and a goal (the mouse).
+
+The boids have goal seeking and collision avoidance in addition to basic behaviors.
 
 It is written in python 2.7 with pygame.
