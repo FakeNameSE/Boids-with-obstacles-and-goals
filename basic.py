@@ -1,172 +1,19 @@
 #!/usr/bin/env python
 # Boid implementation in Python using PyGame
 
-from __future__ import division # required in Python 2.7
+from __future__ import division  # required in Python 2.7
 
 import sys
-import pygame
-import random
-import math
 
-# === constants ===
-
-SCREEN_SIZE = SCREEN_WIDTH, SCREEN_HEIGHT = 1350, 710
-BLACK = (0, 0, 0)
-RED   = (255, 0, 0)
-
-MAX_BOID_VELOCITY = 8
-NUM_BOIDS = 55
-BORDER = 30
-
-# === weights ===
-
-COHESION_WEIGHT = 100
-ALIGNMENT_WEIGHT = 40
-SEPERATION_WEIGHT = 5
-OBSTACLE_AVOIDANCE_WEIGHT = 10
-GOAL_WEIGHT = 100
-
-# === classes ===
-
-class Boid(pygame.sprite.Sprite):
-
-    def __init__(self, x, y):
-        super(Boid, self).__init__()
-
-        # Load image as sprite
-        self.image = pygame.image.load("ressources/img/boid.png").convert()
-
-        # Fetch the rectangle object that has the dimensions of the image
-        self.rect = self.image.get_rect()
-
-        # Coordinates
-        self.rect.x = x
-        self.rect.y = y
-        
-        self.velocityX = random.randint(1, 10) / 10.0
-        self.velocityY = random.randint(1, 10) / 10.0
-
-    def distance(self, boid):
-        '''Return the distance from another boid'''
-
-        distX = self.rect.x - boid.rect.x
-        distY = self.rect.y - boid.rect.y
-
-        return math.sqrt(distX * distX + distY * distY)
-
-    def cohesion(self, boid_list):
-        '''Move closer to a set of boid_list'''
-
-        if len(boid_list) < 1:
-            return
-
-        # calculate the average distances from the other boid_list
-        avgX = 0
-        avgY = 0
-        for boid in boid_list:
-            if boid.rect.x == self.rect.x and boid.rect.y == self.rect.y:
-                continue
-
-            avgX += (self.rect.x - boid.rect.x)
-            avgY += (self.rect.y - boid.rect.y)
-
-        avgX /= len(boid_list)
-        avgY /= len(boid_list)
-
-        # set our velocity towards the others
-        distance = math.sqrt((avgX * avgX) + (avgY * avgY)) * -1.0
-
-        self.velocityX -= (avgX / COHESION_WEIGHT)
-        self.velocityY -= (avgY / COHESION_WEIGHT)
-
-
-    def alignment(self, boid_list):
-        '''Move with a set of boid_list'''
-
-        if len(boid_list) < 1:
-            return
-
-        # calculate the average velocities of the other boid_list
-        avgX = 0
-        avgY = 0
-
-        for boid in boid_list:
-            avgX += boid.velocityX
-            avgY += boid.velocityY
-
-        avgX /= len(boid_list)
-        avgY /= len(boid_list)
-
-        # set our velocity towards the others
-        self.velocityX += (avgX / ALIGNMENT_WEIGHT)
-        self.velocityY += (avgY / ALIGNMENT_WEIGHT)
-
-    def seperation(self, boid_list, minDistance):
-        '''Move away from a set of boid_list. This avoids crowding'''
-
-        if len(boid_list) < 1:
-            return
-
-        distanceX = 0
-        distanceY = 0
-        numClose = 0
-
-        for boid in boid_list:
-            distance = self.distance(boid)
-
-            if  distance < minDistance:
-                numClose += 1
-                xdiff = (self.rect.x - boid.rect.x)
-                ydiff = (self.rect.y - boid.rect.y)
-
-                if xdiff >= 0:
-                    xdiff = math.sqrt(minDistance) - xdiff
-                elif xdiff < 0:
-                    xdiff = -math.sqrt(minDistance) - xdiff
-
-                if ydiff >= 0:
-                    ydiff = math.sqrt(minDistance) - ydiff
-                elif ydiff < 0:
-                    ydiff = -math.sqrt(minDistance) - ydiff
-
-                distanceX += xdiff
-                distanceY += ydiff
-
-        if numClose == 0:
-            return
-
-        self.velocityX -= distanceX / SEPERATION_WEIGHT
-        self.velocityY -= distanceY / SEPERATION_WEIGHT
-
-    def update(self):
-        '''Perform actual movement based on our velocity'''
-
-        # ensure they stay within the screen space
-        # if we roubound we can lose some of our velocity
-        if self.rect.x < BORDER and self.velocityX < 0:
-            self.velocityX = -self.velocityX * random.random()
-        if self.rect.x > SCREEN_WIDTH - BORDER and self.velocityX > 0:
-            self.velocityX = -self.velocityX * random.random()
-        if self.rect.y < BORDER and self.velocityY < 0:
-            self.velocityY = -self.velocityY * random.random()
-        if self.rect.y > SCREEN_HEIGHT - BORDER and self.velocityY > 0:
-            self.velocityY = -self.velocityY * random.random()
-
-        # Obey speed limit
-        if abs(self.velocityX) > MAX_BOID_VELOCITY or abs(self.velocityY) > MAX_BOID_VELOCITY:
-            scaleFactor = MAX_BOID_VELOCITY / max(abs(self.velocityX), abs(self.velocityY))
-            self.velocityX *= scaleFactor
-            self.velocityY *= scaleFactor
-
-        self.rect.x += self.velocityX
-        self.rect.y += self.velocityY
+from boid import *
+from constants import *
 
 # === main === (lower_case names)
 
 # --- init ---
 
 pygame.init()
-screen = pygame.display.set_mode(SCREEN_SIZE)
+screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 
 # Set the title of the window
 pygame.display.set_caption('Boids')
@@ -205,7 +52,7 @@ while running:
                 running = False
 
     # --- updates ---
-    
+
     # Scan for boids and obstacles to pay attention to
     for boid in boid_list:
         closeboid = []
@@ -215,16 +62,16 @@ while running:
             distance = boid.distance(otherboid)
             if distance < 200:
                 closeboid.append(otherboid)
-                
+
         # Apply the rules of the boids
         boid.cohesion(closeboid)
         boid.alignment(closeboid)
-        boid.seperation(closeboid, 20)
+        boid.separation(closeboid, 20)
         boid.update()
-	
-    # --- draws ---
-	
-	# Background colour
+
+        # --- draws ---
+
+    # Background colour
     screen.fill(BLACK)
 
     # Draw all the spites
