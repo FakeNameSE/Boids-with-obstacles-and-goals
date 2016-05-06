@@ -10,7 +10,7 @@ import math
 
 # === constants ===
 
-SCREEN_SIZE = SCREEN_WIDTH, SCREEN_HEIGHT = 1350, 710
+SCREEN_SIZE = SCREEN_WIDTH, SCREEN_HEIGHT = 1200, 900
 BLACK = (0, 0, 0)
 RED   = (255, 0, 0)
 
