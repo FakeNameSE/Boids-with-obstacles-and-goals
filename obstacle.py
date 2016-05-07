@@ -18,6 +18,10 @@ class Obstacle(pygame.sprite.Sprite):
         self.rect.x = x
         self.rect.y = y
 
+        # Actual coordinates (center of block)
+        self.real_x = self.rect.x + 15
+        self.real_y = self.rect.y + 15
+
     def update(self):
         """Just in case I want to expand this"""
         pass

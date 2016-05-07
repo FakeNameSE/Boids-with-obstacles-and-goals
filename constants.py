@@ -1,7 +1,7 @@
 import pygame
-
+from pygame.locals import *
 pygame.init()
-
+flags = DOUBLEBUF
 # === constants ===
 
 infoObject = pygame.display.Info()
@@ -15,3 +15,4 @@ MAX_BOID_VELOCITY = 8
 NUM_BOIDS = 55
 NUM_OBSTACLES = 17
 BORDER = 30
+

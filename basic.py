@@ -29,7 +29,7 @@ all_sprites_list = pygame.sprite.Group()
 
 # Place boids
 for i in range(NUM_BOIDS):
-    boid = Boid(random.randint(0, SCREEN_WIDTH), random.randint(0, SCREEN_HEIGHT))
+    boid = Boid(random.randint(0, SCREEN_WIDTH), random.randint(0, SCREEN_HEIGHT), 100, 40, 5, 10, 100, 60)
     # Add the boid to the lists of objects
     boid_list.add(boid)
     all_sprites_list.add(boid)
@@ -59,7 +59,7 @@ while running:
         for otherboid in boid_list:
             if otherboid == boid:
                 continue
-            distance = boid.distance(otherboid)
+            distance = boid.distance(otherboid, False)
             if distance < 200:
                 closeboid.append(otherboid)
 

@@ -6,21 +6,14 @@ import random
 
 from constants import *
 
-# === weights ===
-
-COHESION_WEIGHT = 100
-ALIGNMENT_WEIGHT = 40
-SEPARATION_WEIGHT = 5
-OBSTACLE_AVOIDANCE_WEIGHT = 10
-GOAL_WEIGHT = 100
-
 
 class Boid(pygame.sprite.Sprite):
-    def __init__(self, x, y):
+    def __init__(self, x, y, cohesion_weight, alignment_weight, separation_weight,
+                 obstacle_avoidance_weight, goal_weight, field_of_view):
         super(Boid, self).__init__()
 
         # Load image as sprite
-        self.image = pygame.image.load("resources/img/boid.png").convert()
+        self.image = pygame.image.load("resources/img/boid.png").convert_alpha()
 
         # Fetch the rectangle object that has the dimensions of the image
         self.rect = self.image.get_rect()
@@ -32,11 +25,25 @@ class Boid(pygame.sprite.Sprite):
         self.velocityX = random.randint(1, 10) / 10.0
         self.velocityY = random.randint(1, 10) / 10.0
 
-    def distance(self, boid):
+        # === weights ===
+        self.cohesion_weight = cohesion_weight
+        self.alignment_weight = alignment_weight
+        self.separation_weight = separation_weight
+        self.obstacle_avoidance_weight = obstacle_avoidance_weight
+        self.goal_weight = goal_weight
+
+        self.field_of_view = field_of_view
+
+    def distance(self, entity, obstacle):
         """Return the distance from another boid"""
 
-        dist_x = self.rect.x - boid.rect.x
-        dist_y = self.rect.y - boid.rect.y
+        if obstacle:
+            dist_x = self.rect.x - entity.real_x
+            dist_y = self.rect.y - entity.real_y
+
+        else:
+            dist_x = self.rect.x - entity.rect.x
+            dist_y = self.rect.y - entity.rect.y
 
         return math.sqrt(dist_x * dist_x + dist_y * dist_y)
 
@@ -60,8 +67,8 @@ class Boid(pygame.sprite.Sprite):
         average_y /= len(boid_list)
 
         # set our velocity towards the others
-        self.velocityX -= (average_x / COHESION_WEIGHT)
-        self.velocityY -= (average_y / COHESION_WEIGHT)
+        self.velocityX -= (average_x / self.cohesion_weight)
+        self.velocityY -= (average_y / self.cohesion_weight)
 
     def alignment(self, boid_list):
         """Move with a set of boid_list"""
@@ -81,8 +88,8 @@ class Boid(pygame.sprite.Sprite):
         average_y /= len(boid_list)
 
         # set our velocity towards the others
-        self.velocityX += (average_x / ALIGNMENT_WEIGHT)
-        self.velocityY += (average_x / ALIGNMENT_WEIGHT)
+        self.velocityX += (average_x / self.alignment_weight)
+        self.velocityY += (average_x / self.alignment_weight)
 
     def separation(self, boid_list, min_distance):
         """Move away from a set of boid_list. This avoids crowding"""
@@ -95,7 +102,7 @@ class Boid(pygame.sprite.Sprite):
         num_close = 0
 
         for boid in boid_list:
-            distance = self.distance(boid)
+            distance = self.distance(boid, False)
 
             if distance < min_distance:
                 num_close += 1
@@ -118,18 +125,18 @@ class Boid(pygame.sprite.Sprite):
         if num_close == 0:
             return
 
-        self.velocityX -= distance_x / SEPARATION_WEIGHT
-        self.velocityY -= distance_y / SEPARATION_WEIGHT
+        self.velocityX -= distance_x / self.separation_weight
+        self.velocityY -= distance_y / self.separation_weight
 
     def obstacle_avoidance(self, obstacle):
         """Avoid obstacles"""
-        self.velocityX += -1 * (obstacle.rect.x - self.rect.x) / OBSTACLE_AVOIDANCE_WEIGHT
-        self.velocityY += -1 * (obstacle.rect.y - self.rect.y) / OBSTACLE_AVOIDANCE_WEIGHT
+        self.velocityX += -1 * (obstacle.real_x - self.rect.x) / self.obstacle_avoidance_weight
+        self.velocityY += -1 * (obstacle.real_y - self.rect.y) / self.obstacle_avoidance_weight
 
     def goal(self, mouse_x, mouse_y):
         """Seek goal"""
-        self.velocityX += (mouse_x - self.rect.x) / GOAL_WEIGHT
-        self.velocityY += (mouse_y - self.rect.y) / GOAL_WEIGHT
+        self.velocityX += (mouse_x - self.rect.x) / self.goal_weight
+        self.velocityY += (mouse_y - self.rect.y) / self.goal_weight
 
     def update(self):
         """Perform actual movement based on our velocity"""

@@ -8,13 +8,14 @@ import sys
 from boid import *
 from obstacle import *
 
+
 # === main ===
 
 # --- init ---
 
 pygame.init()
 
-screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), flags)
 
 # Set the title of the window
 pygame.display.set_caption('Boids')
@@ -31,7 +32,7 @@ all_sprites_list = pygame.sprite.Group()
 
 # Place boids
 for i in range(NUM_BOIDS):
-    boid = Boid(random.randint(0, SCREEN_WIDTH), random.randint(0, SCREEN_HEIGHT))
+    boid = Boid(random.randint(0, SCREEN_WIDTH), random.randint(0, SCREEN_HEIGHT), 100, 40, 5, 10, 100, 60)
     # Add the boid to the lists of objects
     boid_list.add(boid)
     all_sprites_list.add(boid)
@@ -61,6 +62,9 @@ while running:
             if event.key == pygame.K_ESCAPE:
                 running = False
 
+    text = "Boids Simulation: FPS: {0:.2f}".format(clock.get_fps())
+    pygame.display.set_caption(text)
+
     pos = pygame.mouse.get_pos()
     mouse_x = pos[0]
     mouse_y = pos[1]
@@ -75,12 +79,12 @@ while running:
         for otherboid in boid_list:
             if otherboid == boid:
                 continue
-            distance = boid.distance(otherboid)
+            distance = boid.distance(otherboid, False)
             if distance < 200:
                 closeboid.append(otherboid)
         for obstacle in obstacle_list:
-            distance = boid.distance(obstacle)
-            if distance < 50:
+            distance = boid.distance(obstacle, True)
+            if distance < boid.field_of_view:
                 avoid = True
 
         # Apply the rules of the boids
