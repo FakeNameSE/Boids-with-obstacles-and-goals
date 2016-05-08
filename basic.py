@@ -30,7 +30,7 @@ all_sprites_list = pygame.sprite.Group()
 # Place boids
 for i in range(NUM_BOIDS):
     boid = Boid(random.randint(0, SCREEN_WIDTH), random.randint(0, SCREEN_HEIGHT),
-                100, 40, 5, 10, 100, 60, "resources/img/boid.png")
+                100, 40, 5, 10, 100, 60, MAX_BOID_VELOCITY, "resources/img/boid.png")
     # Add the boid to the lists of objects
     boid_list.add(boid)
     all_sprites_list.add(boid)
@@ -68,7 +68,7 @@ while running:
         boid.cohesion(closeboid)
         boid.alignment(closeboid)
         boid.separation(closeboid, 20)
-        boid.update(True)
+        boid.update(False)
 
         # --- draws ---
 

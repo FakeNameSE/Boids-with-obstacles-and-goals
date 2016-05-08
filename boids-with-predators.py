@@ -30,16 +30,16 @@ all_sprites_list = pygame.sprite.Group()
 # --- create boids and obstacles at random positions on the screen ---
 
 # Place boids
-for i in range(NUM_BOIDS):
+for i in range(NUM_PREY):
     prey = Boid(random.randint(BORDER, SCREEN_WIDTH - BORDER), random.randint(BORDER, SCREEN_HEIGHT - BORDER),
-                100, 40, 5, 10, 50, 60, "resources/img/boid.png")
+                100, 40, 5, 10, 0, FIELD_OF_VIEW, MAX_PREY_VELOCITY, "resources/img/boid.png")
     # Add the prey to the lists of objects
     prey_list.add(prey)
     all_sprites_list.add(prey)
 
-for i in range(10):
+for i in range(NUM_PREDATORS):
     predator = Boid(random.randint(BORDER, SCREEN_WIDTH - BORDER), random.randint(BORDER, SCREEN_HEIGHT - BORDER),
-                    100, 40, 5, 10, 90, 80, "resources/img/predator.png")
+                    100, 40, 5, 0, 50, FIELD_OF_VIEW, MAX_PREDATOR_VELOCITY, "resources/img/predator.png")
     # Add the predator to the lists of objects
     predator_list.add(predator)
     all_sprites_list.add(predator)

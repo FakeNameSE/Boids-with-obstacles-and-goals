@@ -10,7 +10,7 @@ from constants import *
 
 class Boid(pygame.sprite.Sprite):
     def __init__(self, x, y, cohesion_weight, alignment_weight, separation_weight,
-                 obstacle_avoidance_weight, goal_weight, field_of_view, image):
+                 obstacle_avoidance_weight, goal_weight, field_of_view, max_velocity, image):
         super(Boid, self).__init__()
 
         # Load image as sprite
@@ -26,7 +26,9 @@ class Boid(pygame.sprite.Sprite):
         self.velocityX = random.randint(1, 10) / 10.0
         self.velocityY = random.randint(1, 10) / 10.0
 
-        # === weights ===
+        # === Attributes ===
+
+        # Weights
         self.cohesion_weight = cohesion_weight
         self.alignment_weight = alignment_weight
         self.separation_weight = separation_weight
@@ -34,7 +36,7 @@ class Boid(pygame.sprite.Sprite):
         self.goal_weight = goal_weight
 
         self.field_of_view = field_of_view
-
+        self.max_velocity = max_velocity
     def distance(self, entity, obstacle):
         """Return the distance from another boid"""
 
@@ -202,8 +204,8 @@ class Boid(pygame.sprite.Sprite):
                 self.velocityY = -self.velocityY * random.random()
 
         # Obey speed limit
-        if abs(self.velocityX) > MAX_BOID_VELOCITY or abs(self.velocityY) > MAX_BOID_VELOCITY:
-            scale_factor = MAX_BOID_VELOCITY / max(abs(self.velocityX), abs(self.velocityY))
+        if abs(self.velocityX) > self.max_velocity or abs(self.velocityY) > self.max_velocity:
+            scale_factor = self.max_velocity / max(abs(self.velocityX), abs(self.velocityY))
             self.velocityX *= scale_factor
             self.velocityY *= scale_factor
 
