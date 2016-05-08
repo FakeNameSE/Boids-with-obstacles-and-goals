@@ -3,17 +3,18 @@ from __future__ import division  # required in Python 2.7
 import math
 import pygame
 import random
+from operator import itemgetter
 
 from constants import *
 
 
 class Boid(pygame.sprite.Sprite):
     def __init__(self, x, y, cohesion_weight, alignment_weight, separation_weight,
-                 obstacle_avoidance_weight, goal_weight, field_of_view):
+                 obstacle_avoidance_weight, goal_weight, field_of_view, image):
         super(Boid, self).__init__()
 
         # Load image as sprite
-        self.image = pygame.image.load("resources/img/boid.png").convert_alpha()
+        self.image = pygame.image.load(image).convert_alpha()
 
         # Fetch the rectangle object that has the dimensions of the image
         self.rect = self.image.get_rect()
@@ -53,7 +54,7 @@ class Boid(pygame.sprite.Sprite):
         if len(boid_list) < 1:
             return
 
-        # calculate the average distances from the other boid_list
+        # calculate the average distances from the other prey_list
         average_x = 0
         average_y = 0
         for boid in boid_list:
@@ -76,7 +77,7 @@ class Boid(pygame.sprite.Sprite):
         if len(boid_list) < 1:
             return
 
-        # calculate the average velocities of the other boid_list
+        # calculate the average velocities of the other prey_list
         average_x = 0
         average_y = 0
 
@@ -138,19 +139,67 @@ class Boid(pygame.sprite.Sprite):
         self.velocityX += (mouse_x - self.rect.x) / self.goal_weight
         self.velocityY += (mouse_y - self.rect.y) / self.goal_weight
 
-    def update(self):
-        """Perform actual movement based on our velocity"""
+    def attack(self, target_list):
+        """Predatory behavior"""
+        if len(target_list) < 1:
+            self.velocityX += (SCREEN_WIDTH - self.rect.x)
+            self.velocityY += (SCREEN_WIDTH - self.rect.y)
+            return
 
-        # ensure they stay within the screen space
-        # if we rebound we can lose some of our velocity
-        if self.rect.x < BORDER and self.velocityX < 0:
-            self.velocityX = -self.velocityX * random.random()
-        if self.rect.x > SCREEN_WIDTH - BORDER and self.velocityX > 0:
-            self.velocityX = -self.velocityX * random.random()
-        if self.rect.y < BORDER and self.velocityY < 0:
-            self.velocityY = -self.velocityY * random.random()
-        if self.rect.y > SCREEN_HEIGHT - BORDER and self.velocityY > 0:
-            self.velocityY = -self.velocityY * random.random()
+        # Calculate the center of mass of target_list
+        target_ids = []
+        average_x = 0
+        average_y = 0
+        for target in target_list:
+            average_x += target.rect.x
+            average_y += target.rect.y
+
+        average_x /= len(target_list)
+        average_y /= len(target_list)
+
+        # Create a 2d array containing all nearby prey and their distance from the center of mass
+        for target in target_list:
+            dist_x = average_x - target.rect.x
+            dist_y = average_y - target.rect.y
+            distance = math.sqrt(dist_x * dist_x + dist_y * dist_y)
+            target_ids.append([target, distance])
+
+        # Sort array by distance from center of mass
+        target_ids = sorted(target_ids, key=itemgetter(0))
+
+        # Set vector on intercept toward where the prey the furthest from us is going
+        self.velocityX += ((target_ids[0][0].rect.x + target_ids[0][0].velocityX) - self.rect.x) / self.goal_weight
+        self.velocityY += ((target_ids[0][0].rect.y + target_ids[0][0].velocityY) - self.rect.y) / self.goal_weight
+
+    def flee(self, predator):
+        """Prey behavior, avoid the predators"""
+        self.velocityX += -1 * (predator.rect.x - self.rect.x) / self.obstacle_avoidance_weight
+        self.velocityY += -1 * (predator.rect.y - self.rect.y) / self.obstacle_avoidance_weight
+
+    def update(self, wrap):
+        """Perform actual movement based on our velocity"""
+        if wrap:
+            # If we leave the screen we reappear on the other side.
+            if self.rect.x < 0 and self.velocityX < 0:
+                self.rect.x = SCREEN_WIDTH
+            if self.rect.x > SCREEN_WIDTH and self.velocityX > 0:
+                self.rect.x = 0
+            if self.rect.y < 0 and self.velocityY < 0:
+                self.rect.y = SCREEN_HEIGHT
+            if self.rect.y > SCREEN_HEIGHT and self.velocityY > 0:
+                self.rect.y = 0
+
+        else:
+            # ensure they stay within the screen space
+            # if we rebound we can lose some of our velocity
+            if self.rect.x < BORDER and self.velocityX < 0:
+                self.velocityX = -self.velocityX * random.random()
+            if self.rect.x > SCREEN_WIDTH - BORDER and self.velocityX > 0:
+                self.velocityX = -self.velocityX * random.random()
+            if self.rect.y < BORDER and self.velocityY < 0:
+                self.velocityY = -self.velocityY * random.random()
+            if self.rect.y > SCREEN_HEIGHT - BORDER and self.velocityY > 0:
+                self.velocityY = -self.velocityY * random.random()
 
         # Obey speed limit
         if abs(self.velocityX) > MAX_BOID_VELOCITY or abs(self.velocityY) > MAX_BOID_VELOCITY:

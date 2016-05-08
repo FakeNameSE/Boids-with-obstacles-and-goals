@@ -29,7 +29,8 @@ all_sprites_list = pygame.sprite.Group()
 
 # Place boids
 for i in range(NUM_BOIDS):
-    boid = Boid(random.randint(0, SCREEN_WIDTH), random.randint(0, SCREEN_HEIGHT), 100, 40, 5, 10, 100, 60)
+    boid = Boid(random.randint(0, SCREEN_WIDTH), random.randint(0, SCREEN_HEIGHT),
+                100, 40, 5, 10, 100, 60, "resources/img/boid.png")
     # Add the boid to the lists of objects
     boid_list.add(boid)
     all_sprites_list.add(boid)
@@ -53,7 +54,7 @@ while running:
 
     # --- updates ---
 
-    # Scan for boids and obstacles to pay attention to
+    # Scan for boids and predators to pay attention to
     for boid in boid_list:
         closeboid = []
         for otherboid in boid_list:
@@ -67,7 +68,7 @@ while running:
         boid.cohesion(closeboid)
         boid.alignment(closeboid)
         boid.separation(closeboid, 20)
-        boid.update()
+        boid.update(True)
 
         # --- draws ---
 

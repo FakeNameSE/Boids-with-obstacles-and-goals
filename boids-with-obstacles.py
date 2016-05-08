@@ -32,7 +32,8 @@ all_sprites_list = pygame.sprite.Group()
 
 # Place boids
 for i in range(NUM_BOIDS):
-    boid = Boid(random.randint(0, SCREEN_WIDTH), random.randint(0, SCREEN_HEIGHT), 100, 40, 5, 10, 100, 60)
+    boid = Boid(random.randint(0, SCREEN_WIDTH), random.randint(0, SCREEN_HEIGHT),
+                100, 40, 5, 10, 100, 60, "resources/img/boid.png")
     # Add the boid to the lists of objects
     boid_list.add(boid)
     all_sprites_list.add(boid)
@@ -74,7 +75,6 @@ while running:
     # Scan for boids and obstacles to pay attention to
     for boid in boid_list:
         closeboid = []
-        obstacles = []
         avoid = False
         for otherboid in boid_list:
             if otherboid == boid:
@@ -94,7 +94,7 @@ while running:
         if avoid:
             boid.obstacle_avoidance(obstacle)
         boid.goal(mouse_x, mouse_y)
-        boid.update()
+        boid.update(False)
 
     # Check for collisions
     for boid in boid_list:
