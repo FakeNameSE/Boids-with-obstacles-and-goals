@@ -144,8 +144,8 @@ class Boid(pygame.sprite.Sprite):
     def attack(self, target_list):
         """Predatory behavior"""
         if len(target_list) < 1:
-            self.velocityX += (SCREEN_WIDTH - self.rect.x)
-            self.velocityY += (SCREEN_WIDTH - self.rect.y)
+            self.velocityX += (SCREEN_WIDTH/2 - self.rect.x)
+            self.velocityY += (SCREEN_WIDTH/2 - self.rect.y)
             return
 
         # Calculate the center of mass of target_list
@@ -194,13 +194,13 @@ class Boid(pygame.sprite.Sprite):
         else:
             # ensure they stay within the screen space
             # if we rebound we can lose some of our velocity
-            if self.rect.x < BORDER and self.velocityX < 0:
+            if self.rect.x < 0 and self.velocityX < 0:
                 self.velocityX = -self.velocityX * random.random()
-            if self.rect.x > SCREEN_WIDTH - BORDER and self.velocityX > 0:
+            if self.rect.x > SCREEN_WIDTH and self.velocityX > 0:
                 self.velocityX = -self.velocityX * random.random()
-            if self.rect.y < BORDER and self.velocityY < 0:
+            if self.rect.y < 0 and self.velocityY < 0:
                 self.velocityY = -self.velocityY * random.random()
-            if self.rect.y > SCREEN_HEIGHT - BORDER and self.velocityY > 0:
+            if self.rect.y > SCREEN_HEIGHT and self.velocityY > 0:
                 self.velocityY = -self.velocityY * random.random()
 
         # Obey speed limit
