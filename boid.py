@@ -144,8 +144,8 @@ class Boid(pygame.sprite.Sprite):
     def attack(self, target_list):
         """Predatory behavior"""
         if len(target_list) < 1:
-            self.velocityX += (SCREEN_WIDTH/2 - self.rect.x)
-            self.velocityY += (SCREEN_WIDTH/2 - self.rect.y)
+            self.velocityX += (SCREEN_WIDTH/2 - self.rect.x) / self.goal_weight
+            self.velocityY += (SCREEN_HEIGHT/2 - self.rect.y) / self.goal_weight
             return
 
         # Calculate the center of mass of target_list
@@ -175,9 +175,13 @@ class Boid(pygame.sprite.Sprite):
 
     def flee(self, predator):
         """Prey behavior, avoid the predators"""
-        self.velocityX += -1 * (predator.rect.x - self.rect.x) / self.obstacle_avoidance_weight
-        self.velocityY += -1 * (predator.rect.y - self.rect.y) / self.obstacle_avoidance_weight
-
+        self.velocityX += -(predator.rect.x - self.rect.x) / self.obstacle_avoidance_weight
+        self.velocityY += -(predator.rect.y - self.rect.y) / self.obstacle_avoidance_weight
+        
+    def go_to_middle(self):
+		self.velocityX += (SCREEN_WIDTH/2 - self.rect.x) / 120
+		self.velocityY += (SCREEN_HEIGHT/2 - self.rect.y) / 120
+		
     def update(self, wrap):
         """Perform actual movement based on our velocity"""
         if wrap:

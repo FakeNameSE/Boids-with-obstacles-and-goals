@@ -18,8 +18,6 @@ screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), flags)
 # Set the title of the window
 pygame.display.set_caption('Boids with predators')
 
-# --- objects ---
-
 # lists
 prey_list = pygame.sprite.Group()
 predator_list = pygame.sprite.Group()
@@ -32,7 +30,7 @@ all_sprites_list = pygame.sprite.Group()
 # Place boids
 for i in range(NUM_PREY):
     prey = Boid(random.randint(BORDER, SCREEN_WIDTH - BORDER), random.randint(BORDER, SCREEN_HEIGHT - BORDER),
-                100, 40, 5, 10, 0, FIELD_OF_VIEW, MAX_PREY_VELOCITY, "resources/img/boid.png")
+                100, 40, 5, 15, 0, FIELD_OF_VIEW, MAX_PREY_VELOCITY, "resources/img/boid.png")
     # Add the prey to the lists of objects
     prey_list.add(prey)
     all_sprites_list.add(prey)
@@ -87,6 +85,8 @@ while running:
         prey.separation(closeboid, 20)
         if avoid:
             prey.flee(predator)
+        else:
+			prey.go_to_middle()
         prey.update(False)
 
     for predator in predator_list:
@@ -109,7 +109,10 @@ while running:
         predator.separation(closeboid, 20)
         predator.attack(closeprey)
         predator.update(False)
-
+	
+	for predator in predator_list:
+		collisions = pygame.sprite.spritecollide(predator, prey_list, True)
+    
     # --- draws ---
 
     # Background colour
