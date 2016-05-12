@@ -21,7 +21,6 @@ pygame.display.set_caption('Boids with predators')
 # lists
 prey_list = pygame.sprite.Group()
 predator_list = pygame.sprite.Group()
-
 # This is a list of every sprite.
 all_sprites_list = pygame.sprite.Group()
 
@@ -112,8 +111,8 @@ while running:
 
     for predator in predator_list:
         collisions = pygame.sprite.spritecollide(predator, prey_list, True)
-        # for prey in collisions:
-            # print "munch!"
+        for prey in collisions:
+            print "munch!"
     
     # --- draws ---
 

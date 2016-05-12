@@ -167,17 +167,24 @@ class Boid(pygame.sprite.Sprite):
             distance = math.sqrt(dist_x * dist_x + dist_y * dist_y)
             target_ids.append([target, distance])
 
-        # Sort array by distance from center of mass
-        target_ids = sorted(target_ids, key=itemgetter(0))
+        # Create an array holding the prey furthest from the center of mass of its flock
+        target_id = sorted(target_ids, key=itemgetter(0))
+        del target_ids
 
         # Set vector on intercept toward where the prey the furthest from us is going
-        self.velocityX += ((target_ids[0][0].rect.x + target_ids[0][0].velocityX) - self.rect.x) / self.goal_weight
-        self.velocityY += ((target_ids[0][0].rect.y + target_ids[0][0].velocityY) - self.rect.y) / self.goal_weight
+        self.velocityX += ((target_id[0][0].rect.x +
+                            (target_id[0][0].velocityX * 2)) - self.rect.x) / self.goal_weight
+        self.velocityY += ((target_id[0][0].rect.y +
+                            (target_id[0][0].velocityY * 2)) - self.rect.y) / self.goal_weight
+
+        del target_id
 
     def flee(self, predator):
         """Prey behavior, avoid the predators"""
-        self.velocityX += -(predator.rect.x - self.rect.x) / self.obstacle_avoidance_weight
-        self.velocityY += -(predator.rect.y - self.rect.y) / self.obstacle_avoidance_weight
+        self.velocityX += -(((predator.rect.x + (2 * predator.velocityX)) - self.rect.x) /
+                            self.obstacle_avoidance_weight) * random.randint(1, 2)
+        self.velocityY += -(((predator.rect.y + (2 * predator.velocityY)) - self.rect.y) /
+                            self.obstacle_avoidance_weight) * random.randint(1, 2)
         
     def go_to_middle(self):
         self.velocityX += (SCREEN_WIDTH/2 - self.rect.x) / 150
