@@ -86,8 +86,8 @@ while running:
         if avoid:
             prey.flee(predator)
         else:
-			prey.go_to_middle()
-        prey.update(False)
+            prey.go_to_middle()
+        prey.update(True)
 
     for predator in predator_list:
         closeboid = []
@@ -108,10 +108,12 @@ while running:
         predator.alignment(closeboid)
         predator.separation(closeboid, 20)
         predator.attack(closeprey)
-        predator.update(False)
-	
-	for predator in predator_list:
-		collisions = pygame.sprite.spritecollide(predator, prey_list, True)
+        predator.update(True)
+
+    for predator in predator_list:
+        collisions = pygame.sprite.spritecollide(predator, prey_list, True)
+        # for prey in collisions:
+            # print "munch!"
     
     # --- draws ---
 

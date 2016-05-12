@@ -37,6 +37,7 @@ class Boid(pygame.sprite.Sprite):
 
         self.field_of_view = field_of_view
         self.max_velocity = max_velocity
+
     def distance(self, entity, obstacle):
         """Return the distance from another boid"""
 
@@ -179,9 +180,9 @@ class Boid(pygame.sprite.Sprite):
         self.velocityY += -(predator.rect.y - self.rect.y) / self.obstacle_avoidance_weight
         
     def go_to_middle(self):
-		self.velocityX += (SCREEN_WIDTH/2 - self.rect.x) / 120
-		self.velocityY += (SCREEN_HEIGHT/2 - self.rect.y) / 120
-		
+        self.velocityX += (SCREEN_WIDTH/2 - self.rect.x) / 150
+        self.velocityY += (SCREEN_HEIGHT/2 - self.rect.y) / 150
+
     def update(self, wrap):
         """Perform actual movement based on our velocity"""
         if wrap:
