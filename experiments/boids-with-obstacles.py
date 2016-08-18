@@ -5,8 +5,8 @@ from __future__ import division  # required in Python 2.7
 
 import sys
 
-from boid import *
-from obstacle import *
+from modules.boid import *
+from modules.obstacle import *
 
 
 # === main ===
