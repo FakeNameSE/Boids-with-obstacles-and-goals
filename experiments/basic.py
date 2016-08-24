@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 # Boid implementation in Python using PyGame
-
 from __future__ import division  # required in Python 2.7
-
 import sys
 
 from modules.boid import *
@@ -63,10 +61,21 @@ while running:
             if distance < 200:
                 closeboid.append(otherboid)
 
+        # TODO Make boids do something random if they do not move
+        # Attempt to initiate random movement if there is a standstill
+        # if len(closeboid) == 0:
+        #     print boid.velocityY
         # Apply the rules of the boids
         boid.cohesion(closeboid)
         boid.alignment(closeboid)
         boid.separation(closeboid, 20)
+
+        # Attempt to initiate random movement if there is a standstill
+        # Neither of these if statements work
+        # if -0.1 <= boid.velocityX <= 0.1 and -0.1 <= boid.velocityY <= 0.1:
+        # if boid.velocityX == 0 and boid.velocityY == 0:
+        #     boid.go_to_middle()
+        #     print boid.velocityY
         boid.update(False)
 
         # --- draws ---

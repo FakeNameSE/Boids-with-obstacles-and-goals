@@ -97,6 +97,7 @@ while running:
         boid.update(False)
 
     # Check for collisions
+    # TODO Either make this work or add a genetic algorithm and kill them
     for boid in boid_list:
         collisions = pygame.sprite.spritecollide(boid, obstacle_list, False)
         for obstacle in collisions:
