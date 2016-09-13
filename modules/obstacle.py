@@ -1,6 +1,4 @@
-import pygame
-
-from constants import *
+from modules.constants import *
 
 
 class Obstacle(pygame.sprite.Sprite):

@@ -1,7 +1,7 @@
 from __future__ import division  # required in Python 2.7
 
 import math
-import pygame
+#import pygame
 import random
 from operator import itemgetter
 
@@ -131,6 +131,11 @@ class Boid(pygame.sprite.Sprite):
 
         self.velocityX -= distance_x / self.separation_weight
         self.velocityY -= distance_y / self.separation_weight
+
+    def do_something(self):
+        """Do something random"""
+        self.velocityX += (SCREEN_WIDTH / 2 - self.rect.x) / 150
+        self.velocityY += (SCREEN_HEIGHT / 2 - self.rect.y) / 150
 
     def obstacle_avoidance(self, obstacle):
         """Avoid obstacles"""

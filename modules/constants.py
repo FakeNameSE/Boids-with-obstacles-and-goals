@@ -1,7 +1,7 @@
-import pygame
-from pygame.locals import *
+from modules import pygame
+
 pygame.init()
-flags = DOUBLEBUF
+flags = pygame.DOUBLEBUF
 # === constants ===
 
 infoObject = pygame.display.Info()

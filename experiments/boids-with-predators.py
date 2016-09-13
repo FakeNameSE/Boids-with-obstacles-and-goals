@@ -5,8 +5,7 @@ from __future__ import division  # required in Python 2.7
 
 import sys
 
-from boid import *
-from constants import *
+from modules.boid import *
 
 # === main === (lower_case names)
 
