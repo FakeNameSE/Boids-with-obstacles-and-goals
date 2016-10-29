@@ -4,7 +4,7 @@
 from __future__ import division  # required in Python 2.7
 
 import sys
-
+sys.path.append("..") # Necessary because of directory structure
 from modules.boid import *
 
 # === main === (lower_case names)
