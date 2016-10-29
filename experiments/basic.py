@@ -2,7 +2,7 @@
 # Boid implementation in Python using PyGame
 from __future__ import division  # required in Python 2.7
 import sys
-
+sys.path.append("..")
 from modules.boid import *
 
 # === main === (lower_case names)
