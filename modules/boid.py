@@ -1,7 +1,9 @@
+#!/usr/bin/env python
+# coding=utf-8
 from __future__ import division  # required in Python 2.7
 
 import math
-#import pygame
+# import pygame
 import random
 from operator import itemgetter
 
@@ -150,8 +152,8 @@ class Boid(pygame.sprite.Sprite):
     def attack(self, target_list):
         """Predatory behavior"""
         if len(target_list) < 1:
-            self.velocityX += (SCREEN_WIDTH/2 - self.rect.x) / self.goal_weight
-            self.velocityY += (SCREEN_HEIGHT/2 - self.rect.y) / self.goal_weight
+            self.velocityX += (SCREEN_WIDTH / 2 - self.rect.x) / self.goal_weight
+            self.velocityY += (SCREEN_HEIGHT / 2 - self.rect.y) / self.goal_weight
             return
 
         # Calculate the center of mass of target_list
@@ -190,10 +192,10 @@ class Boid(pygame.sprite.Sprite):
                             self.obstacle_avoidance_weight) * random.randint(1, 2)
         self.velocityY += -(((predator.rect.y + (2 * predator.velocityY)) - self.rect.y) /
                             self.obstacle_avoidance_weight) * random.randint(1, 2)
-        
+
     def go_to_middle(self):
-        self.velocityX += (SCREEN_WIDTH/2 - self.rect.x) / 150
-        self.velocityY += (SCREEN_HEIGHT/2 - self.rect.y) / 150
+        self.velocityX += (SCREEN_WIDTH / 2 - self.rect.x) / 150
+        self.velocityY += (SCREEN_HEIGHT / 2 - self.rect.y) / 150
 
     def update(self, wrap):
         """Perform actual movement based on our velocity"""
