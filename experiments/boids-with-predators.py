@@ -1,10 +1,11 @@
 #!/usr/bin/env python
+# coding=utf-8
 # Boid implementation in Python using PyGame
 
 from __future__ import division  # required in Python 2.7
-
 import sys
-sys.path.append("..") # Necessary because of directory structure
+
+sys.path.append("..")  # Necessary because of directory structure
 from modules.boid import *
 
 # === main === (lower_case names)
@@ -17,8 +18,9 @@ screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), flags)
 # Set the title of the window
 pygame.display.set_caption('Boids with predators')
 
-# lists
+# sprite lists
 prey_list = pygame.sprite.Group()
+close_prey = pygame.sprite.Group()
 predator_list = pygame.sprite.Group()
 # This is a list of every sprite.
 all_sprites_list = pygame.sprite.Group()
@@ -26,14 +28,14 @@ all_sprites_list = pygame.sprite.Group()
 # --- create boids and obstacles at random positions on the screen ---
 
 # Place boids
-for i in range(NUM_PREY):
+for i in xrange(NUM_PREY):
     prey = Boid(random.randint(BORDER, SCREEN_WIDTH - BORDER), random.randint(BORDER, SCREEN_HEIGHT - BORDER),
                 100, 40, 5, 15, 0, FIELD_OF_VIEW, MAX_PREY_VELOCITY, "resources/img/boid.png")
     # Add the prey to the lists of objects
     prey_list.add(prey)
     all_sprites_list.add(prey)
 
-for i in range(NUM_PREDATORS):
+for i in xrange(NUM_PREDATORS):
     predator = Boid(random.randint(BORDER, SCREEN_WIDTH - BORDER), random.randint(BORDER, SCREEN_HEIGHT - BORDER),
                     100, 40, 5, 0, 50, FIELD_OF_VIEW, MAX_PREDATOR_VELOCITY, "resources/img/predator.png")
     # Add the predator to the lists of objects
@@ -89,7 +91,7 @@ while running:
 
     for predator in predator_list:
         closeboid = []
-        closeprey = []
+        close_prey.empty()
         for otherboid in predator_list:
             if otherboid == predator:
                 continue
@@ -99,20 +101,19 @@ while running:
                 for prey in prey_list:
                     distance = prey.distance(prey, False)
                     if distance < predator.field_of_view:
-                        closeprey.append(prey)
+                        close_prey.add(prey)
 
         # Apply the rules of the boids
         predator.cohesion(closeboid)
         predator.alignment(closeboid)
         predator.separation(closeboid, 20)
-        predator.attack(closeprey)
+        predator.attack(close_prey)
         predator.update(True)
 
-    for predator in predator_list:
-        collisions = pygame.sprite.spritecollide(predator, prey_list, True)
-        for prey in collisions:
-            print "munch!"
-    
+        collisions = pygame.sprite.spritecollide(predator, close_prey, True)
+        # for prey in collisions:
+        # print "munch!"
+
     # --- draws ---
 
     # Background colour

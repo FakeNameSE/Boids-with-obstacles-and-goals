@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# coding=utf-8
 # Boid implementation in Python using PyGame
 from __future__ import division  # required in Python 2.7
 import sys
