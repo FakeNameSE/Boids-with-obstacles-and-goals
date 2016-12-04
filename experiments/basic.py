@@ -19,6 +19,7 @@ pygame.display.set_caption('Boids')
 # --- objects ---
 
 # lists
+# This is a list of every boid
 boid_list = pygame.sprite.Group()
 # This is a list of every sprite.
 all_sprites_list = pygame.sprite.Group()
@@ -32,6 +33,7 @@ for i in range(NUM_BOIDS):
     # Add the boid to the lists of objects
     boid_list.add(boid)
     all_sprites_list.add(boid)
+    rects.append(boid.rect)
 
 # --- mainloop ---
 
@@ -63,20 +65,10 @@ while running:
                 closeboid.append(otherboid)
 
         # TODO Make boids do something random if they do not move
-        # Attempt to initiate random movement if there is a standstill
-        # if len(closeboid) == 0:
-        #     print boid.velocityY
         # Apply the rules of the boids
         boid.cohesion(closeboid)
         boid.alignment(closeboid)
         boid.separation(closeboid, 20)
-
-        # Attempt to initiate random movement if there is a standstill
-        # Neither of these if statements work
-        # if -0.1 <= boid.velocityX <= 0.1 and -0.1 <= boid.velocityY <= 0.1:
-        # if boid.velocityX == 0 and boid.velocityY == 0:
-        #     boid.go_to_middle()
-        #     print boid.velocityY
         boid.update(False)
 
         # --- draws ---
@@ -89,8 +81,6 @@ while running:
 
     # Go ahead and update the screen with what we've drawn.
     pygame.display.flip()
-    pygame.time.delay(10)
-    # Used to manage how fast the screen updates
     clock.tick(120)
 
 # --- the end ---

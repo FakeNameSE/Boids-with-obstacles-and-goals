@@ -40,6 +40,9 @@ class Boid(pygame.sprite.Sprite):
         self.field_of_view = field_of_view
         self.max_velocity = max_velocity
 
+        # Number of times it needed to be forced towards the center
+        self.centered = 0
+
     def distance(self, entity, obstacle):
         """Return the distance from another boid"""
 
@@ -221,6 +224,12 @@ class Boid(pygame.sprite.Sprite):
                 self.velocityY = -self.velocityY * random.random()
             if self.rect.y > SCREEN_HEIGHT and self.velocityY > 0:
                 self.velocityY = -self.velocityY * random.random()
+
+            # Initiate random movement if there is a standstill
+            if self.velocityX <= 0.9 and self.velocityX >= -0.9 and self.velocityY <= 0.9 and self.velocityY >= -0.9:
+                self.centered += 1
+                if self.centered > 10:
+                    self.go_to_middle()
 
         # Obey speed limit
         if abs(self.velocityX) > self.max_velocity or abs(self.velocityY) > self.max_velocity:
