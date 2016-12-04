@@ -3,9 +3,9 @@
 from modules.constants import *
 
 
-class Obstacle(pygame.sprite.Sprite):
+class Obstacle(pygame.sprite.DirtySprite):
     def __init__(self, x, y):
-        super(Obstacle, self).__init__()
+        pygame.sprite.DirtySprite.__init__(self)
 
         # Draw obstacles (squares)
         self.image = pygame.Surface([30, 30])
@@ -21,6 +21,8 @@ class Obstacle(pygame.sprite.Sprite):
         # Actual coordinates (center of block)
         self.real_x = self.rect.x + 15
         self.real_y = self.rect.y + 15
+
+        self.dirty = 0
 
     def update(self):
         """Just in case I want to expand this"""

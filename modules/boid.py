@@ -10,10 +10,11 @@ from operator import itemgetter
 from constants import *
 
 
-class Boid(pygame.sprite.Sprite):
+class Boid(pygame.sprite.DirtySprite):
     def __init__(self, x, y, cohesion_weight, alignment_weight, separation_weight,
                  obstacle_avoidance_weight, goal_weight, field_of_view, max_velocity, image):
-        super(Boid, self).__init__()
+        # super(Boid, self).__init__()
+        pygame.sprite.DirtySprite.__init__(self)
 
         # Load image as sprite
         self.image = pygame.image.load(image).convert_alpha()
@@ -226,7 +227,7 @@ class Boid(pygame.sprite.Sprite):
                 self.velocityY = -self.velocityY * random.random()
 
             # Initiate random movement if there is a standstill
-            if self.velocityX <= 0.9 and self.velocityX >= -0.9 and self.velocityY <= 0.9 and self.velocityY >= -0.9:
+            if 0.9 >= self.velocityX >= -0.9 and 0.9 >= self.velocityY >= -0.9:
                 self.centered += 1
                 if self.centered > 10:
                     self.go_to_middle()
@@ -239,3 +240,6 @@ class Boid(pygame.sprite.Sprite):
 
         self.rect.x += self.velocityX
         self.rect.y += self.velocityY
+
+        # Since the boidsshould always be moving, we don't have to worry about whether or not they have a dirty rect
+        self.dirty = 1

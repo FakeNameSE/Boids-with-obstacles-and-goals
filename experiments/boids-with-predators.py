@@ -18,12 +18,17 @@ screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), flags)
 # Set the title of the window
 pygame.display.set_caption('Boids with predators')
 
+# Fill background
+background = pygame.Surface(screen.get_size())
+background = background.convert()
+background.fill(BLACK)
+
 # sprite lists
 prey_list = pygame.sprite.Group()
 close_prey = pygame.sprite.Group()
 predator_list = pygame.sprite.Group()
 # This is a list of every sprite.
-all_sprites_list = pygame.sprite.Group()
+all_sprites_list = pygame.sprite.LayeredDirty()
 
 # --- create boids and obstacles at random positions on the screen ---
 
@@ -42,11 +47,13 @@ for i in xrange(NUM_PREDATORS):
     predator_list.add(predator)
     all_sprites_list.add(predator)
 
-# --- mainloop ---
-
 clock = pygame.time.Clock()
-
 running = True
+
+# Clear old sprites and replace with background
+all_sprites_list.clear(screen, background)
+
+# --- mainloop ---
 
 while running:
 
@@ -116,17 +123,14 @@ while running:
 
     # --- draws ---
 
-    # Background colour
-    screen.fill(BLACK)
-
-    # Draw all the spites
-    all_sprites_list.draw(screen)
+    # Create list of dirty sprites
+    rects = all_sprites_list.draw(screen)
 
     # Go ahead and update the screen with what we've drawn.
-    pygame.display.flip()
-    pygame.time.delay(10)
+    pygame.display.update(rects)
+    # pygame.time.delay(10)
     # Used to manage how fast the screen updates
-    clock.tick(120)
+    clock.tick(60)
 
 # --- the end ---
 pygame.quit()
