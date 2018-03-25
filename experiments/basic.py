@@ -2,8 +2,9 @@
 # coding=utf-8
 # Boid implementation in Python using PyGame
 from __future__ import division  # required in Python 2.7
-import sys
-sys.path.append("..")
+# Necessary to import modules with relative path
+import sys, os.path as path
+sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
 from modules.boid import *
 
 # === main === (lower_case names)
@@ -16,28 +17,35 @@ screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 # Set the title of the window
 pygame.display.set_caption('Boids')
 
+# Fill background
+background = pygame.Surface(screen.get_size())
+background = background.convert()
+background.fill(BLACK)
+
 # --- objects ---
 
 # lists
+# This is a list of every boid
 boid_list = pygame.sprite.Group()
 # This is a list of every sprite.
-all_sprites_list = pygame.sprite.Group()
+all_sprites_list = pygame.sprite.LayeredDirty()
 
 # --- create boids and obstacles at random positions on the screen ---
 
 # Place boids
 for i in range(NUM_BOIDS):
     boid = Boid(random.randint(0, SCREEN_WIDTH), random.randint(0, SCREEN_HEIGHT),
-                100, 40, 5, 10, 100, 60, MAX_BOID_VELOCITY, "resources/img/boid.png")
+                100, 40, 5, 10, 100, 200, MAX_BOID_VELOCITY, "experiments/resources/img/boid.png")
     # Add the boid to the lists of objects
     boid_list.add(boid)
     all_sprites_list.add(boid)
 
-# --- mainloop ---
-
 clock = pygame.time.Clock()
-
 running = True
+# Clear old sprites and replace with background
+all_sprites_list.clear(screen, background)
+
+# --- mainloop ---
 
 while running:
 
@@ -50,47 +58,32 @@ while running:
             if event.key == pygame.K_ESCAPE:
                 running = False
 
+    text = "Boids Simulation: FPS: {0:.2f}".format(clock.get_fps())
+    pygame.display.set_caption(text)
     # --- updates ---
 
-    # Scan for boids and predators to pay attention to
+    # Scan for boids to pay attention to
     for boid in boid_list:
         closeboid = []
         for otherboid in boid_list:
             if otherboid == boid:
                 continue
             distance = boid.distance(otherboid, False)
-            if distance < 200:
+            if distance < boid.field_of_view:
                 closeboid.append(otherboid)
 
-        # TODO Make boids do something random if they do not move
-        # Attempt to initiate random movement if there is a standstill
-        # if len(closeboid) == 0:
-        #     print boid.velocityY
         # Apply the rules of the boids
         boid.cohesion(closeboid)
         boid.alignment(closeboid)
         boid.separation(closeboid, 20)
-
-        # Attempt to initiate random movement if there is a standstill
-        # Neither of these if statements work
-        # if -0.1 <= boid.velocityX <= 0.1 and -0.1 <= boid.velocityY <= 0.1:
-        # if boid.velocityX == 0 and boid.velocityY == 0:
-        #     boid.go_to_middle()
-        #     print boid.velocityY
         boid.update(False)
 
         # --- draws ---
 
-    # Background colour
-    screen.fill(BLACK)
-
-    # Draw all the spites
-    all_sprites_list.draw(screen)
-
+    # Create list of dirty rects
+    rects = all_sprites_list.draw(screen)
     # Go ahead and update the screen with what we've drawn.
-    pygame.display.flip()
-    pygame.time.delay(10)
-    # Used to manage how fast the screen updates
+    pygame.display.update(rects)
     clock.tick(120)
 
 # --- the end ---

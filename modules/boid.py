@@ -7,13 +7,14 @@ import math
 import random
 from operator import itemgetter
 
-from constants import *
+from modules.constants import *
 
 
-class Boid(pygame.sprite.Sprite):
+class Boid(pygame.sprite.DirtySprite):
     def __init__(self, x, y, cohesion_weight, alignment_weight, separation_weight,
                  obstacle_avoidance_weight, goal_weight, field_of_view, max_velocity, image):
-        super(Boid, self).__init__()
+        # super(Boid, self).__init__()
+        pygame.sprite.DirtySprite.__init__(self)
 
         # Load image as sprite
         self.image = pygame.image.load(image).convert_alpha()
@@ -134,15 +135,16 @@ class Boid(pygame.sprite.Sprite):
         self.velocityX -= distance_x / self.separation_weight
         self.velocityY -= distance_y / self.separation_weight
 
-    def do_something(self):
-        """Do something random"""
-        self.velocityX += (SCREEN_WIDTH / 2 - self.rect.x) / 150
-        self.velocityY += (SCREEN_HEIGHT / 2 - self.rect.y) / 150
-
     def obstacle_avoidance(self, obstacle):
         """Avoid obstacles"""
-        self.velocityX += -1 * (obstacle.real_x - self.rect.x) / self.obstacle_avoidance_weight
-        self.velocityY += -1 * (obstacle.real_y - self.rect.y) / self.obstacle_avoidance_weight
+        # Avoid collision with obstacles at all cost
+        if self.distance(obstacle, True) < 45:
+			self.velocityX = -1 * (obstacle.real_x - self.rect.x)
+			self.velocityY = -1 * (obstacle.real_y - self.rect.y)
+        
+        else:
+			self.velocityX += -1 * (obstacle.real_x - self.rect.x) / self.obstacle_avoidance_weight
+			self.velocityY += -1 * (obstacle.real_y - self.rect.y) / self.obstacle_avoidance_weight
 
     def goal(self, mouse_x, mouse_y):
         """Seek goal"""
@@ -152,8 +154,7 @@ class Boid(pygame.sprite.Sprite):
     def attack(self, target_list):
         """Predatory behavior"""
         if len(target_list) < 1:
-            self.velocityX += (SCREEN_WIDTH / 2 - self.rect.x) / self.goal_weight
-            self.velocityY += (SCREEN_HEIGHT / 2 - self.rect.y) / self.goal_weight
+            self.go_to_middle()
             return
 
         # Calculate the center of mass of target_list
@@ -222,6 +223,10 @@ class Boid(pygame.sprite.Sprite):
             if self.rect.y > SCREEN_HEIGHT and self.velocityY > 0:
                 self.velocityY = -self.velocityY * random.random()
 
+            # Initiate random movement if there is a standstill
+            if abs(math.sqrt(self.velocityX**2 + self.velocityY**2))< 2:
+				self.go_to_middle()
+
         # Obey speed limit
         if abs(self.velocityX) > self.max_velocity or abs(self.velocityY) > self.max_velocity:
             scale_factor = self.max_velocity / max(abs(self.velocityX), abs(self.velocityY))
@@ -230,3 +235,6 @@ class Boid(pygame.sprite.Sprite):
 
         self.rect.x += self.velocityX
         self.rect.y += self.velocityY
+
+        # Since the boids should always be moving, we don't have to worry about whether or not they have a dirty rect
+        self.dirty = 1

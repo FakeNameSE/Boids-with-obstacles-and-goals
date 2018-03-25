@@ -3,9 +3,9 @@
 # Boid implementation in Python using PyGame
 
 from __future__ import division  # required in Python 2.7
-import sys
-
-sys.path.append("..")  # Necessary because of directory structure
+# Necessary to import modules with relative path
+import sys, os.path as path
+sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
 from modules.boid import *
 
 # === main === (lower_case names)
@@ -18,35 +18,42 @@ screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), flags)
 # Set the title of the window
 pygame.display.set_caption('Boids with predators')
 
+# Fill background
+background = pygame.Surface(screen.get_size())
+background = background.convert()
+background.fill(BLACK)
+
 # sprite lists
 prey_list = pygame.sprite.Group()
 close_prey = pygame.sprite.Group()
 predator_list = pygame.sprite.Group()
 # This is a list of every sprite.
-all_sprites_list = pygame.sprite.Group()
+all_sprites_list = pygame.sprite.LayeredDirty()
 
 # --- create boids and obstacles at random positions on the screen ---
 
 # Place boids
 for i in xrange(NUM_PREY):
     prey = Boid(random.randint(BORDER, SCREEN_WIDTH - BORDER), random.randint(BORDER, SCREEN_HEIGHT - BORDER),
-                100, 40, 5, 15, 0, FIELD_OF_VIEW, MAX_PREY_VELOCITY, "resources/img/boid.png")
+                100, 40, 5, 15, 0, FIELD_OF_VIEW, MAX_PREY_VELOCITY, "experiments/resources/img/boid.png")
     # Add the prey to the lists of objects
     prey_list.add(prey)
     all_sprites_list.add(prey)
 
 for i in xrange(NUM_PREDATORS):
     predator = Boid(random.randint(BORDER, SCREEN_WIDTH - BORDER), random.randint(BORDER, SCREEN_HEIGHT - BORDER),
-                    100, 40, 5, 0, 50, FIELD_OF_VIEW, MAX_PREDATOR_VELOCITY, "resources/img/predator.png")
+                    100, 40, 5, 0, 50, FIELD_OF_VIEW, MAX_PREDATOR_VELOCITY, "experiments/resources/img/predator.png")
     # Add the predator to the lists of objects
     predator_list.add(predator)
     all_sprites_list.add(predator)
 
-# --- mainloop ---
-
 clock = pygame.time.Clock()
-
 running = True
+
+# Clear old sprites and replace with background
+all_sprites_list.clear(screen, background)
+
+# --- mainloop ---
 
 while running:
 
@@ -116,17 +123,14 @@ while running:
 
     # --- draws ---
 
-    # Background colour
-    screen.fill(BLACK)
-
-    # Draw all the spites
-    all_sprites_list.draw(screen)
+    # Create list of dirty sprites
+    rects = all_sprites_list.draw(screen)
 
     # Go ahead and update the screen with what we've drawn.
-    pygame.display.flip()
-    pygame.time.delay(10)
+    pygame.display.update(rects)
+    # pygame.time.delay(10)
     # Used to manage how fast the screen updates
-    clock.tick(120)
+    clock.tick(60)
 
 # --- the end ---
 pygame.quit()
