@@ -2,8 +2,9 @@
 # coding=utf-8
 # Boid implementation in Python using PyGame
 from __future__ import division  # required in Python 2.7
-import sys
-sys.path.append("..")
+# Necessary to import modules with relative path
+import sys, os.path as path
+sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
 from modules.boid import *
 
 # === main === (lower_case names)
@@ -34,7 +35,7 @@ all_sprites_list = pygame.sprite.LayeredDirty()
 # Place boids
 for i in range(NUM_BOIDS):
     boid = Boid(random.randint(0, SCREEN_WIDTH), random.randint(0, SCREEN_HEIGHT),
-                100, 40, 5, 10, 100, 60, MAX_BOID_VELOCITY, "resources/img/boid.png")
+                100, 40, 5, 10, 100, 200, MAX_BOID_VELOCITY, "experiments/resources/img/boid.png")
     # Add the boid to the lists of objects
     boid_list.add(boid)
     all_sprites_list.add(boid)
@@ -57,7 +58,7 @@ while running:
             if event.key == pygame.K_ESCAPE:
                 running = False
 
-    text = "Boids Simulation with Predators: FPS: {0:.2f}".format(clock.get_fps())
+    text = "Boids Simulation: FPS: {0:.2f}".format(clock.get_fps())
     pygame.display.set_caption(text)
     # --- updates ---
 
@@ -68,7 +69,7 @@ while running:
             if otherboid == boid:
                 continue
             distance = boid.distance(otherboid, False)
-            if distance < 200:
+            if distance < boid.field_of_view:
                 closeboid.append(otherboid)
 
         # Apply the rules of the boids

@@ -3,9 +3,9 @@
 # Boid implementation in Python using PyGame
 
 from __future__ import division  # required in Python 2.7
-import sys
-
-sys.path.append("..")  # Necessary because of directory structure
+# Necessary to import modules with relative path
+import sys, os.path as path
+sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
 from modules.boid import *
 from modules.obstacle import *
 
@@ -38,7 +38,7 @@ all_sprites_list = pygame.sprite.LayeredDirty()
 # Place boids
 for i in range(NUM_BOIDS):
     boid = Boid(random.randint(0, SCREEN_WIDTH), random.randint(0, SCREEN_HEIGHT),
-                100, 40, 5, 10, 100, 60, MAX_BOID_VELOCITY, "resources/img/boid.png")
+                100, 40, 5, 10, 100, 60, MAX_BOID_VELOCITY, "experiments/resources/img/boid.png")
     # Add the boid to the lists of objects
     boid_list.add(boid)
     all_sprites_list.add(boid)
@@ -70,7 +70,7 @@ while running:
             if event.key == pygame.K_ESCAPE:
                 running = False
 
-    text = "Boids Simulation: FPS: {0:.2f}".format(clock.get_fps())
+    text = "Boids Simulation with Obstacles: FPS: {0:.2f}".format(clock.get_fps())
     pygame.display.set_caption(text)
 
     pos = pygame.mouse.get_pos()
@@ -82,24 +82,26 @@ while running:
     # Scan for boids and obstacles to pay attention to
     for boid in boid_list:
         closeboid = []
+        visible_obstacles = []
         avoid = False
         for otherboid in boid_list:
             if otherboid == boid:
                 continue
             distance = boid.distance(otherboid, False)
-            if distance < 200:
+            if distance < boid.field_of_view:
                 closeboid.append(otherboid)
         for obstacle in obstacle_list:
             distance = boid.distance(obstacle, True)
-            if distance < boid.field_of_view:
-                avoid = True
+            if distance <= boid.field_of_view:
+                visible_obstacles.append(obstacle)
 
         # Apply the rules of the boids
         boid.cohesion(closeboid)
         boid.alignment(closeboid)
         boid.separation(closeboid, 20)
-        if avoid:
-            boid.obstacle_avoidance(obstacle)
+        if len(visible_obstacles) > 0:
+            for obstacle in visible_obstacles:
+				boid.obstacle_avoidance(obstacle)
         boid.goal(mouse_x, mouse_y)
         boid.update(False)
 
@@ -108,8 +110,8 @@ while running:
     for boid in boid_list:
         collisions = pygame.sprite.spritecollide(boid, obstacle_list, False)
         for obstacle in collisions:
-            boid.velocityX = -1 * boid.velocityX * random.uniform(0.1, 0.9)
-            boid.velocityY = -1 * boid.velocityY * random.uniform(0.1, 0.9)
+			boid.velocityX += -1 * (obstacle.real_x - boid.rect.x)
+			boid.velocityY += -1 * (obstacle.real_y - boid.rect.y)
 
     # --- draws ---
 

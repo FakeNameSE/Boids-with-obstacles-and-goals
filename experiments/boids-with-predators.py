@@ -3,9 +3,9 @@
 # Boid implementation in Python using PyGame
 
 from __future__ import division  # required in Python 2.7
-import sys
-
-sys.path.append("..")  # Necessary because of directory structure
+# Necessary to import modules with relative path
+import sys, os.path as path
+sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
 from modules.boid import *
 
 # === main === (lower_case names)
@@ -35,14 +35,14 @@ all_sprites_list = pygame.sprite.LayeredDirty()
 # Place boids
 for i in xrange(NUM_PREY):
     prey = Boid(random.randint(BORDER, SCREEN_WIDTH - BORDER), random.randint(BORDER, SCREEN_HEIGHT - BORDER),
-                100, 40, 5, 15, 0, FIELD_OF_VIEW, MAX_PREY_VELOCITY, "resources/img/boid.png")
+                100, 40, 5, 15, 0, FIELD_OF_VIEW, MAX_PREY_VELOCITY, "experiments/resources/img/boid.png")
     # Add the prey to the lists of objects
     prey_list.add(prey)
     all_sprites_list.add(prey)
 
 for i in xrange(NUM_PREDATORS):
     predator = Boid(random.randint(BORDER, SCREEN_WIDTH - BORDER), random.randint(BORDER, SCREEN_HEIGHT - BORDER),
-                    100, 40, 5, 0, 50, FIELD_OF_VIEW, MAX_PREDATOR_VELOCITY, "resources/img/predator.png")
+                    100, 40, 5, 0, 50, FIELD_OF_VIEW, MAX_PREDATOR_VELOCITY, "experiments/resources/img/predator.png")
     # Add the predator to the lists of objects
     predator_list.add(predator)
     all_sprites_list.add(predator)
