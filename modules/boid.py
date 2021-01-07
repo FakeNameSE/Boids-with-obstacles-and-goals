@@ -9,6 +9,8 @@ from operator import itemgetter
 
 from modules.constants import *
 
+# Cohesion, separation, alignment, and update methods and basic boid class design initially based off of http://www.coderholic.com/boids/
+# Boid behavior algorithms and velocity normalization largely from http://www.vergenet.net/~conrad/boids/pseudocode.html
 
 class Boid(pygame.sprite.DirtySprite):
     def __init__(self, x, y, cohesion_weight, alignment_weight, separation_weight,
