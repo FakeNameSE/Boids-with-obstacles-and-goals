@@ -35,14 +35,14 @@ all_sprites_list = pygame.sprite.LayeredDirty()
 # Place boids
 for i in xrange(NUM_PREY):
     prey = Boid(random.randint(BORDER, SCREEN_WIDTH - BORDER), random.randint(BORDER, SCREEN_HEIGHT - BORDER),
-                100, 40, 5, 15, 0, FIELD_OF_VIEW, MAX_PREY_VELOCITY, "experiments/resources/img/boid.png")
+                100, 40, 5, 15, 0, FIELD_OF_VIEW, MAX_PREY_SPEED, "experiments/resources/img/boid.png")
     # Add the prey to the lists of objects
     prey_list.add(prey)
     all_sprites_list.add(prey)
 
 for i in xrange(NUM_PREDATORS):
     predator = Boid(random.randint(BORDER, SCREEN_WIDTH - BORDER), random.randint(BORDER, SCREEN_HEIGHT - BORDER),
-                    100, 40, 5, 0, 50, FIELD_OF_VIEW, MAX_PREDATOR_VELOCITY, "experiments/resources/img/predator.png")
+                    100, 40, 5, 0, 50, FIELD_OF_VIEW, MAX_PREDATOR_SPEED, "experiments/resources/img/predator.png")
     # Add the predator to the lists of objects
     predator_list.add(predator)
     all_sprites_list.add(predator)
@@ -78,11 +78,11 @@ while running:
         for otherboid in prey_list:
             if otherboid == prey:
                 continue
-            distance = prey.distance(otherboid, False)
+            distance = prey.distance(otherboid)
             if distance < 200:
                 closeboid.append(otherboid)
         for predator in predator_list:
-            distance = prey.distance(predator, False)
+            distance = prey.distance(predator)
             if distance < prey.field_of_view:
                 avoid = True
 
@@ -102,13 +102,13 @@ while running:
         for otherboid in predator_list:
             if otherboid == predator:
                 continue
-            distance = predator.distance(otherboid, False)
+            distance = predator.distance(otherboid)
             if distance < predator.field_of_view:
                 closeboid.append(otherboid)
-                for prey in prey_list:
-                    distance = prey.distance(prey, False)
-                    if distance < predator.field_of_view:
-                        close_prey.add(prey)
+        for prey in prey_list:
+            distance = prey.distance(prey)
+            if distance < predator.field_of_view:
+                close_prey.add(prey)
 
         # Apply the rules of the boids
         predator.cohesion(closeboid)
@@ -117,6 +117,7 @@ while running:
         predator.attack(close_prey)
         predator.update(True)
 
+        # If a predator manages to touch a prey, the prey gets eaten!
         collisions = pygame.sprite.spritecollide(predator, close_prey, True)
         # for prey in collisions:
         # print "munch!"

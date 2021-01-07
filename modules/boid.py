@@ -12,7 +12,7 @@ from modules.constants import *
 
 class Boid(pygame.sprite.DirtySprite):
     def __init__(self, x, y, cohesion_weight, alignment_weight, separation_weight,
-                 obstacle_avoidance_weight, goal_weight, field_of_view, max_velocity, image):
+                 obstacle_avoidance_weight, goal_weight, field_of_view, max_speed, image):
         # super(Boid, self).__init__()
         pygame.sprite.DirtySprite.__init__(self)
 
@@ -39,147 +39,131 @@ class Boid(pygame.sprite.DirtySprite):
         self.goal_weight = goal_weight
 
         self.field_of_view = field_of_view
-        self.max_velocity = max_velocity
+        self.max_speed = max_speed
 
-    def distance(self, entity, obstacle):
-        """Return the distance from another boid"""
 
-        if obstacle:
-            dist_x = self.rect.x - entity.real_x
-            dist_y = self.rect.y - entity.real_y
+    '''
+    Return the distance from another sprite.
+    '''
+    def distance(self, other):
+        if not other:
+            return -1
 
-        else:
-            dist_x = self.rect.x - entity.rect.x
-            dist_y = self.rect.y - entity.rect.y
+        dist = (self.rect.x - other.rect.x, self.rect.y - other.rect.y)
+        return math.sqrt(dist[0] ** 2 + dist[1] ** 2)
 
-        return math.sqrt(dist_x * dist_x + dist_y * dist_y)
+    '''
+    Boids want to stay close to each other, have them move towards the center of mass of the flock.
 
+    Note that boid_list is the list of boids to take into consideration when applying this rule and does not contain the current boid.
+
+    Note that we can account for limited vision of each boid by limiting which boids get added to boid_list (for instance only boids within a certain distance). This gives each boid a "perceived flock".
+    '''
     def cohesion(self, boid_list):
-        """Move closer to a set of boid_list"""
-
-        if len(boid_list) < 1:
+        # Nothing to do if no other boids nearby.
+        if len(boid_list) == 0:
             return
 
-        # calculate the average distances from the other prey_list
-        average_x = 0
-        average_y = 0
-        for boid in boid_list:
-            if boid.rect.x == self.rect.x and boid.rect.y == self.rect.y:
-                continue
+        # Calculate the center of mass of boid_list (the center of mass of the flock as perceived by our boid).
+        center = find_center_of_mass(boid_list)
 
-            average_x += (self.rect.x - boid.rect.x)
-            average_y += (self.rect.y - boid.rect.y)
-
-        average_x /= len(boid_list)
-        average_y /= len(boid_list)
+        # We want to move in the direction of the vector from the current boid's position to this center of mass.
+        cohesion_velocity_change = (center[0] - self.rect.x, center[1] - self.rect.y)
 
         # set our velocity towards the others
-        self.velocityX -= (average_x / self.cohesion_weight)
-        self.velocityY -= (average_y / self.cohesion_weight)
+        self.velocityX += (cohesion_velocity_change[0] / self.cohesion_weight)
+        self.velocityY += (cohesion_velocity_change[1] / self.cohesion_weight)
 
+
+    '''
+    Boids want to move in the same direction, have them move along direction of average velocity vector.
+
+    Note that boid_list is the list of boids to take into consideration when applying this rule and does not contain the current boid.
+
+    Note that we can account for limited vision of each boid by limiting which boids get added to boid_list (for instance only boids within a certain distance). This gives each boid a "perceived flock".
+    '''
     def alignment(self, boid_list):
-        """Move with a set of boid_list"""
-
-        if len(boid_list) < 1:
+        if len(boid_list) == 0:
             return
 
         # calculate the average velocities of the other prey_list
-        average_x = 0
-        average_y = 0
+        average_velocity = [0, 0]
 
         for boid in boid_list:
-            average_x += boid.velocityX
-            average_y += boid.velocityY
+            average_velocity[0] += boid.velocityX
+            average_velocity[1] += boid.velocityY
 
-        average_x /= len(boid_list)
-        average_y /= len(boid_list)
+        average_velocity[0] /= len(boid_list)
+        average_velocity[1] /= len(boid_list)
 
         # set our velocity towards the others
-        self.velocityX += (average_x / self.alignment_weight)
-        self.velocityY += (average_x / self.alignment_weight)
+        self.velocityX += (average_velocity[0] / self.alignment_weight)
+        self.velocityY += (average_velocity[1] / self.alignment_weight)
 
+    '''
+    Boids want to maintain some distance with respect to each other. Have them move in opposite direction of nearby boids.
+
+    Note that boid_list is the list of boids to take into consideration when applying this rule and does not contain the current boid.
+
+    Note that we can account for limited vision of each boid by limiting which boids get added to boid_list (for instance only boids within a certain distance). This gives each boid a "perceived flock".
+    '''
     def separation(self, boid_list, min_distance):
-        """Move away from a set of boid_list. This avoids crowding"""
-
-        if len(boid_list) < 1:
+        if len(boid_list) == 0:
             return
 
-        distance_x = 0
-        distance_y = 0
-        num_close = 0
+        separation_velocity_change = [0, 0]
 
         for boid in boid_list:
-            distance = self.distance(boid, False)
+            if self.distance(boid) < min_distance:
+                separation_velocity_change[0] += self.rect.x - boid.rect.x
+                separation_velocity_change[1] += self.rect.y - boid.rect.y
 
-            if distance < min_distance:
-                num_close += 1
-                xdiff = (self.rect.x - boid.rect.x)
-                ydiff = (self.rect.y - boid.rect.y)
+        self.velocityX += separation_velocity_change[0] / self.separation_weight
+        self.velocityY += separation_velocity_change[1] / self.separation_weight
 
-                if xdiff >= 0:
-                    xdiff = math.sqrt(min_distance) - xdiff
-                elif xdiff < 0:
-                    xdiff = -math.sqrt(min_distance) - xdiff
+    '''
+    Updates velocity to move boid away from a single obstacle.
 
-                if ydiff >= 0:
-                    ydiff = math.sqrt(min_distance) - ydiff
-                elif ydiff < 0:
-                    ydiff = -math.sqrt(min_distance) - ydiff
-
-                distance_x += xdiff
-                distance_y += ydiff
-
-        if num_close == 0:
-            return
-
-        self.velocityX -= distance_x / self.separation_weight
-        self.velocityY -= distance_y / self.separation_weight
-
+    Note: This should be called for each nearby obstacle that the boid should avoid.
+    '''
     def obstacle_avoidance(self, obstacle):
-        """Avoid obstacles"""
         # Avoid collision with obstacles at all cost
-        if self.distance(obstacle, True) < 45:
+        if self.distance(obstacle) < 45:
 			self.velocityX = -1 * (obstacle.real_x - self.rect.x)
 			self.velocityY = -1 * (obstacle.real_y - self.rect.y)
-        
+
         else:
 			self.velocityX += -1 * (obstacle.real_x - self.rect.x) / self.obstacle_avoidance_weight
 			self.velocityY += -1 * (obstacle.real_y - self.rect.y) / self.obstacle_avoidance_weight
 
+    '''
+    Updates velocity to move boid towards a goal (basically the opposite of obstacle avoidance).
+    '''
     def goal(self, mouse_x, mouse_y):
-        """Seek goal"""
         self.velocityX += (mouse_x - self.rect.x) / self.goal_weight
         self.velocityY += (mouse_y - self.rect.y) / self.goal_weight
 
-    def attack(self, target_list):
-        """Predatory behavior"""
-        if len(target_list) < 1:
+    '''Predatory behavior, updates velocity to move boid towards the nearby prey which is furthest from its visible flock.'''
+    def attack(self, visible_prey):
+        if len(visible_prey) == 0:
             self.go_to_middle()
             return
 
-        # Calculate the center of mass of target_list
+        center = find_center_of_mass(visible_prey)
         target_ids = []
-        average_x = 0
-        average_y = 0
-        for target in target_list:
-            average_x += target.rect.x
-            average_y += target.rect.y
-
-        average_x /= len(target_list)
-        average_y /= len(target_list)
 
         # Create a 2d array containing all nearby prey and their distance from the center of mass
-        for target in target_list:
-            dist_x = average_x - target.rect.x
-            dist_y = average_y - target.rect.y
+        for target in visible_prey:
+            dist_x = center[0] - target.rect.x
+            dist_y = center[1] - target.rect.y
             distance = math.sqrt(dist_x * dist_x + dist_y * dist_y)
             target_ids.append([target, distance])
 
-        # Create an array holding the prey furthest from the center of mass of its flock
+        # Create an list holding the prey furthest from the center of mass of its flock
         target_id = sorted(target_ids, key=itemgetter(0))
         del target_ids
 
-        # Set vector on intercept toward where the prey the furthest from us is going
+        # Update velocity with vector on intercept with where the prey the furthest from the center of mass of the prey flock is going.
         self.velocityX += ((target_id[0][0].rect.x +
                             (target_id[0][0].velocityX * 2)) - self.rect.x) / self.goal_weight
         self.velocityY += ((target_id[0][0].rect.y +
@@ -187,19 +171,36 @@ class Boid(pygame.sprite.DirtySprite):
 
         del target_id
 
+    '''
+    Prey behavior, avoid the predator by moving in opposite direction of projected predator location. Move in a direction randomized a little from that so that the predator does not just need to outrun the prey in a straight line.
+    '''
     def flee(self, predator):
-        """Prey behavior, avoid the predators"""
         self.velocityX += -(((predator.rect.x + (2 * predator.velocityX)) - self.rect.x) /
                             self.obstacle_avoidance_weight) * random.randint(1, 2)
         self.velocityY += -(((predator.rect.y + (2 * predator.velocityY)) - self.rect.y) /
                             self.obstacle_avoidance_weight) * random.randint(1, 2)
 
+    '''
+    Update velocity to move boid towards middle of window.
+    '''
     def go_to_middle(self):
         self.velocityX += (SCREEN_WIDTH / 2 - self.rect.x) / 150
         self.velocityY += (SCREEN_HEIGHT / 2 - self.rect.y) / 150
 
+    '''
+    Normalizes the velocity vector with respect to the maximum speed.
+    '''
+    def limit_speed(self):
+        speed = math.sqrt(self.velocityX**2 + self.velocityY**2)
+        if speed > self.max_speed:
+            scale_factor = self.max_speed / speed
+            self.velocityX *= scale_factor
+            self.velocityY *= scale_factor
+
+    '''
+    Update position based off of velocity of boid.
+    '''
     def update(self, wrap):
-        """Perform actual movement based on our velocity"""
         if wrap:
             # If we leave the screen we reappear on the other side.
             if self.rect.x < 0 and self.velocityX < 0:
@@ -210,10 +211,8 @@ class Boid(pygame.sprite.DirtySprite):
                 self.rect.y = SCREEN_HEIGHT
             if self.rect.y > SCREEN_HEIGHT and self.velocityY > 0:
                 self.rect.y = 0
-
+        # Bounce off the walls to stay on screen. We lose a random amount of velocity along the axis we collided on.
         else:
-            # ensure they stay within the screen space
-            # if we rebound we can lose some of our velocity
             if self.rect.x < 0 and self.velocityX < 0:
                 self.velocityX = -self.velocityX * random.random()
             if self.rect.x > SCREEN_WIDTH and self.velocityX > 0:
@@ -223,18 +222,30 @@ class Boid(pygame.sprite.DirtySprite):
             if self.rect.y > SCREEN_HEIGHT and self.velocityY > 0:
                 self.velocityY = -self.velocityY * random.random()
 
-            # Initiate random movement if there is a standstill
-            if abs(math.sqrt(self.velocityX**2 + self.velocityY**2))< 2:
-				self.go_to_middle()
+        # Go to middle if the boid is not moving much.
+        if abs(math.sqrt(self.velocityX**2 + self.velocityY**2)) < 2:
+			self.go_to_middle()
 
-        # Obey speed limit
-        if abs(self.velocityX) > self.max_velocity or abs(self.velocityY) > self.max_velocity:
-            scale_factor = self.max_velocity / max(abs(self.velocityX), abs(self.velocityY))
-            self.velocityX *= scale_factor
-            self.velocityY *= scale_factor
+        self.limit_speed()
 
         self.rect.x += self.velocityX
         self.rect.y += self.velocityY
 
         # Since the boids should always be moving, we don't have to worry about whether or not they have a dirty rect
         self.dirty = 1
+
+'''
+Utility function to compute the center of mass of a list of boids.
+'''
+def find_center_of_mass(boid_list):
+    if len(boid_list) == 0:
+        return None
+
+    center = [0, 0]
+    for boid in boid_list:
+        center[0] += boid.rect.x
+        center[1] += boid.rect.y
+    center[0] /= len(boid_list)
+    center[1] /= len(boid_list)
+
+    return center

@@ -35,7 +35,7 @@ all_sprites_list = pygame.sprite.LayeredDirty()
 # Place boids
 for i in range(NUM_BOIDS):
     boid = Boid(random.randint(0, SCREEN_WIDTH), random.randint(0, SCREEN_HEIGHT),
-                100, 40, 5, 10, 100, 200, MAX_BOID_VELOCITY, "experiments/resources/img/boid.png")
+                100, 40, 5, 10, 100, 200, MAX_BOID_SPEED, "experiments/resources/img/boid.png")
     # Add the boid to the lists of objects
     boid_list.add(boid)
     all_sprites_list.add(boid)
@@ -68,7 +68,7 @@ while running:
         for otherboid in boid_list:
             if otherboid == boid:
                 continue
-            distance = boid.distance(otherboid, False)
+            distance = boid.distance(otherboid)
             if distance < boid.field_of_view:
                 closeboid.append(otherboid)
 
